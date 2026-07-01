@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GigTax iOS — Project Board</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2128;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --orange: #ffa657;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .app { display: flex; height: 100vh; overflow: hidden; }
+  .sidebar { width: 230px; min-width: 230px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .sidebar-header { padding: 18px 16px 12px; border-bottom: 1px solid var(--border); }
+  .sidebar-header .app-name { font-size: 15px; font-weight: 700; color: var(--text); }
+  .sidebar-header .app-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .sidebar-section { padding: 12px 16px 4px; font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .sidebar-item { display: flex; align-items: center; gap: 8px; padding: 7px 16px; cursor: pointer; font-size: 13px; color: var(--muted); transition: all .15s; border-left: 2px solid transparent; user-select: none; }
+  .sidebar-item:hover { background: var(--surface2); color: var(--text); }
+  .sidebar-item.active { background: rgba(88,166,255,.1); color: var(--accent); border-left-color: var(--accent); }
+  .sidebar-item .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; border-bottom: 1px solid var(--border); background: var(--surface); gap: 16px; }
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .view-toggle { display: flex; background: var(--surface2); border-radius: 6px; padding: 2px; gap: 2px; }
+  .view-btn { padding: 5px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all .15s; }
+  .view-btn.active { background: var(--border); color: var(--text); }
+  .sprint-selector { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .sprint-selector select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 5px 10px; font-size: 13px; cursor: pointer; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .progress-pill { display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--muted); }
+  .progress-pill .pct { color: var(--green); font-weight: 600; }
+
+  .sprint-header { padding: 16px 24px 0; }
+  .sprint-title { font-size: 18px; font-weight: 700; color: var(--text); }
+  .sprint-meta { font-size: 12px; color: var(--muted); margin-top: 4px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .sprint-meta .badge { background: var(--surface2); border: 1px solid var(--border); padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+  .sprint-goal-box { margin: 10px 24px 0; background: rgba(88,166,255,.07); border: 1px solid rgba(88,166,255,.2); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #93c5fd; line-height: 1.5; }
+  .sprint-goal-box strong { color: var(--accent); }
+
+  .stats-row { display: flex; gap: 12px; padding: 14px 24px; flex-wrap: wrap; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; min-width: 90px; }
+  .stat-card .stat-val { font-size: 20px; font-weight: 700; color: var(--text); }
+  .stat-card .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .board { display: flex; gap: 12px; padding: 0 24px 24px; overflow-x: auto; flex: 1; }
+  .column { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; min-width: 235px; max-width: 250px; display: flex; flex-direction: column; max-height: 100%; }
+  .col-header { padding: 11px 13px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .col-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .col-title .col-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .col-count { background: var(--surface2); border-radius: 10px; padding: 1px 7px; font-size: 11px; color: var(--muted); border: 1px solid var(--border); }
+  .col-cards { padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+  .card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; cursor: pointer; transition: border-color .15s, transform .1s; }
+  .card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .card-epic { font-size: 10px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+  .card-epic::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .card-title { font-size: 13px; color: var(--text); line-height: 1.4; }
+  .card-ac { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.5; border-top: 1px solid var(--border); padding-top: 6px; }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+  .card-type { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .type-feature { background: rgba(88,166,255,.15); color: var(--accent); }
+  .type-chore   { background: rgba(139,148,158,.15); color: var(--muted); }
+  .type-spike   { background: rgba(188,140,255,.15); color: var(--purple); }
+  .type-test    { background: rgba(63,185,80,.15); color: var(--green); }
+  .type-design  { background: rgba(210,153,34,.15); color: var(--yellow); }
+  .card-points { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--border); font-size: 10px; color: var(--muted); font-weight: 700; }
+  .card-id { font-size: 10px; color: var(--muted); }
+
+  .epic-bar { display: flex; gap: 14px; padding: 0 24px 10px; flex-wrap: wrap; }
+  .epic-chip { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+  .epic-chip .chip-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  .backlog-view { padding: 0 24px 24px; overflow-y: auto; flex: 1; }
+  .backlog-sprint-group { margin-bottom: 24px; }
+  .backlog-sprint-title { font-size: 14px; font-weight: 700; color: var(--text); padding: 10px 0 6px; border-bottom: 1px solid var(--border); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+  .backlog-sprint-title .sp-pts { font-size: 12px; color: var(--muted); font-weight: 400; }
+  .backlog-row { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 6px; transition: background .12s; cursor: pointer; }
+  .backlog-row:hover { background: var(--surface); }
+  .backlog-row .br-id { font-size: 11px; color: var(--muted); width: 62px; flex-shrink: 0; }
+  .backlog-row .br-title { font-size: 13px; color: var(--text); flex: 1; }
+  .backlog-row .br-epic { font-size: 10px; padding: 2px 7px; border-radius: 10px; background: var(--surface2); font-weight: 600; flex-shrink: 0; }
+  .backlog-row .br-type { font-size: 10px; width: 58px; flex-shrink: 0; text-align: right; }
+  .backlog-row .br-pts { width: 20px; height: 20px; border-radius: 50%; background: var(--border); font-size: 10px; color: var(--muted); font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .backlog-row .br-status { font-size: 10px; width: 72px; text-align: right; flex-shrink: 0; }
+
+  .roadmap-view { padding: 0 24px 24px; overflow-y: auto; flex: 1; }
+  .roadmap-wrap { overflow-x: auto; }
+  .roadmap-grid { display: grid; gap: 1px; background: var(--border); border-radius: 8px; overflow: hidden; font-size: 12px; min-width: 900px; }
+  .rg-cell { background: var(--surface); padding: 8px 10px; }
+  .rg-header { background: var(--surface2); font-weight: 600; color: var(--muted); text-align: center; font-size: 11px; padding: 10px 6px; }
+  .rg-epic-label { font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .rg-bar { border-radius: 4px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; }
+
+  .hidden { display: none; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <div class="app-name">GigTax iOS</div>
+      <div class="app-sub">For rideshare & delivery drivers</div>
+    </div>
+
+    <div class="sidebar-section">Views</div>
+    <div class="sidebar-item active" onclick="switchView('board',this)">📋 Board</div>
+    <div class="sidebar-item" onclick="switchView('backlog',this)">📝 Backlog</div>
+    <div class="sidebar-item" onclick="switchView('roadmap',this)">🗺 Roadmap</div>
+
+    <div class="sidebar-section">Epics</div>
+    <div class="sidebar-item" onclick="filterEpic('all',this)">
+      <span class="dot" style="background:#8b949e"></span> All Epics
+    </div>
+    <div class="sidebar-item" onclick="filterEpic('Foundation',this)">
+      <span class="dot" style="background:#58a6ff"></span> Foundation
+    </div>
+    <div class="sidebar-item" onclick="filterEpic('Driver Profile',this)">
+      <span class="dot" style="background:#3fb950"></span> Driver Profile
+    </div>
+    <div class="sidebar-item" onclick="filterEpic('Trip Tracking',this)">
+      <span class="dot" style="background:#ffa657"></span> Trip Tracking
+    </div>
+    <div class="sidebar-item" onclick="filterEpic('Earnings',this)">
+      <span class="dot" style="background:#f78166"></span> Earnings
+    </div>
+    <div class="sidebar-item" onclick="filterEpic('Expenses',this)">
+      <span class="dot" style="background:#bc8cff"></span> Expenses
+    </div>
+    <div class="sidebar-item" onclick="filterEpic('Tax Engine',this)">
+      <span class="dot" style="background:#d29922"></span> Tax Engine
+    </div>
+    <div class="sidebar-item" onclick="filterEpic('Dashboard',this)">
+      <span class="dot" style="background:#58a6ff"></span> Dashboard
+    </div>
+    <div class="sidebar-item" onclick="filterEpic('Deductions',this)">
+      <span class="dot" style="background:#3fb950"></span> Deductions
+    </div>
+    <div class="sidebar-item" onclick="filterEpic('iOS Features',this)">
+      <span class="dot" style="background:#f85149"></span> iOS Features
+    </div>
+    <div class="sidebar-item" onclick="filterEpic('Polish',this)">
+      <span class="dot" style="background:#8b949e"></span> Polish
+    </div>
+
+    <div class="sidebar-section" style="margin-top:auto;">Progress</div>
+    <div style="padding:10px 16px 16px;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Overall completion</div>
+      <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+        <div id="sidebar-bar" style="height:100%;background:var(--green);border-radius:3px;width:0%;transition:width .3s;"></div>
+      </div>
+      <div id="sidebar-pct" style="font-size:11px;color:var(--green);margin-top:4px;font-weight:600;">0% complete</div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="view-toggle">
+          <button class="view-btn active" id="vbtn-board" onclick="switchView('board',null)">Board</button>
+          <button class="view-btn" id="vbtn-backlog" onclick="switchView('backlog',null)">Backlog</button>
+          <button class="view-btn" id="vbtn-roadmap" onclick="switchView('roadmap',null)">Roadmap</button>
+        </div>
+        <div class="sprint-selector">
+          <span style="font-size:12px;color:var(--muted)">Sprint:</span>
+          <select onchange="changeSprint(this.value)" id="sprint-select"></select>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="progress-pill">
+          <span id="overall-stories">0/0 stories</span>
+          <div style="width:80px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;">
+            <div id="overall-bar" style="height:100%;background:var(--green);border-radius:2px;width:0%;transition:width .3s;"></div>
+          </div>
+          <span class="pct" id="overall-pct">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Board View -->
+    <div id="view-board">
+      <div class="sprint-header">
+        <div class="sprint-title" id="board-title"></div>
+        <div class="sprint-meta">
+          <span id="board-dates"></span>
+          <span class="badge" id="board-pts"></span>
+        </div>
+      </div>
+      <div class="sprint-goal-box" id="board-goal"></div>
+      <div class="stats-row" id="stats-row"></div>
+      <div class="epic-bar" id="epic-bar"></div>
+      <div class="board" id="board"></div>
+    </div>
+
+    <!-- Backlog View -->
+    <div id="view-backlog" class="hidden">
+      <div class="sprint-header" style="padding-bottom:16px;">
+        <div class="sprint-title">Full Backlog</div>
+        <div class="sprint-meta">
+          <span id="backlog-summary"></span>
+        </div>
+      </div>
+      <div class="backlog-view" id="backlog-content"></div>
+    </div>
+
+    <!-- Roadmap View -->
+    <div id="view-roadmap" class="hidden">
+      <div class="sprint-header" style="padding-bottom:16px;">
+        <div class="sprint-title">Roadmap</div>
+        <div class="sprint-meta">10 sprints · ~10 weeks · GigTax iOS v1.0</div>
+      </div>
+      <div class="roadmap-view"><div class="roadmap-wrap"><div class="roadmap-grid" id="roadmap-content"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+
+const EPICS = {
+  'Foundation':     '#58a6ff',
+  'Driver Profile': '#3fb950',
+  'Trip Tracking':  '#ffa657',
+  'Earnings':       '#f78166',
+  'Expenses':       '#bc8cff',
+  'Tax Engine':     '#d29922',
+  'Dashboard':      '#38bdf8',
+  'Deductions':     '#4ade80',
+  'iOS Features':   '#f85149',
+  'Polish':         '#94a3b8',
+};
+
+const STATUS_ORDER = ['backlog','planning','dev','test','done'];
+const STATUS_META = {
+  backlog:  { label: 'Backlog',  dot: '#94a3b8' },
+  planning: { label: 'Planning', dot: '#58a6ff' },
+  dev:      { label: 'In Dev',   dot: '#d29922' },
+  test:     { label: 'Testing',  dot: '#bc8cff' },
+  done:     { label: 'Done',     dot: '#3fb950' },
+};
+
+const SPRINTS = [
+  {
+    id: 0,
+    title: 'S0 · Project Setup & Architecture',
+    dates: 'Week 1',
+    goal: '<strong>Goal:</strong> Scaffold the Xcode project, define all data models, configure background location entitlements, and set up navigation skeleton. Nothing visible yet — this sprint is all infrastructure.',
+    stories: [
+      { id:'GT-001', title:'Create Xcode project (SwiftUI + SwiftData + WidgetKit targets)', epic:'Foundation', type:'chore', pts:2, status:'backlog', ac:'App builds and runs on simulator. Three targets: main app, widget extension, share extension.' },
+      { id:'GT-002', title:'Define Shift @Model (date, platform, income, miles, fuel, expenses, notes, source)', epic:'Foundation', type:'chore', pts:3, status:'backlog', ac:'SwiftData model compiles. All fields present. taxYear computed from date.' },
+      { id:'GT-003', title:'Define Trip @Model (start/end coords, distance, duration, cityMiles, highwayMiles, fuelUsed)', epic:'Foundation', type:'chore', pts:3, status:'backlog', ac:'Trip model stores GPS route as encoded polyline. Links to Shift.' },
+      { id:'GT-004', title:'Define DriverProfile @Model (name, address, car, odometer, filing status, state, county)', epic:'Foundation', type:'chore', pts:2, status:'backlog', ac:'Singleton pattern. Settings persisted across launches.' },
+      { id:'GT-005', title:'Define Vehicle @Model (make, model, year, trim, fuelType, tankSize)', epic:'Foundation', type:'chore', pts:2, status:'backlog', ac:'Links to DriverProfile. Stores EPA MPG city/highway.' },
+      { id:'GT-006', title:'TabView navigation skeleton (Dashboard, Trips, Earnings, Expenses, Settings)', epic:'Foundation', type:'chore', pts:2, status:'backlog', ac:'All 5 tabs navigable. Placeholder views with labels.' },
+      { id:'GT-007', title:'Configure background location entitlements + Info.plist keys', epic:'Foundation', type:'chore', pts:2, status:'backlog', ac:'App has NSLocationAlways and UIBackgroundModes: location. No crash on permission request.' },
+      { id:'GT-008', title:'Set up CloudKit + SwiftData sync container', epic:'Foundation', type:'spike', pts:2, status:'backlog', ac:'ModelConfiguration uses .automatic CloudKit. iCloud entitlement present.' },
+    ]
+  },
+  {
+    id: 1,
+    title: 'S1 · Driver Profile & Vehicle Setup',
+    dates: 'Week 2',
+    goal: '<strong>Goal:</strong> First-launch onboarding captures driver info and car. App fetches real MPG data from the EPA and gas prices from EIA. Driver is ready to start tracking.',
+    stories: [
+      { id:'GT-009', title:'Onboarding flow: welcome → car → profile → permissions', epic:'Driver Profile', type:'feature', pts:3, status:'backlog', ac:'4-screen onboarding. Skippable after first setup. Data saved to DriverProfile.' },
+      { id:'GT-010', title:'Vehicle picker: make → model → year → trim (NHTSA API)', epic:'Driver Profile', type:'feature', pts:5, status:'backlog', ac:'Cascading pickers. Uses NHTSA vPIC API (free, no key). Covers all US vehicles.' },
+      { id:'GT-011', title:'EPA FuelEconomy.gov integration (fetch city/hwy MPG by vehicle)', epic:'Driver Profile', type:'feature', pts:3, status:'backlog', ac:'After vehicle selected, app fetches and stores city MPG + highway MPG. Fallback: manual entry.' },
+      { id:'GT-012', title:'Starting odometer entry', epic:'Driver Profile', type:'feature', pts:1, status:'backlog', ac:'Numeric input. Stored in Vehicle. Used for total mileage tracking.' },
+      { id:'GT-013', title:'EIA gas price integration (weekly regional average by state)', epic:'Driver Profile', type:'feature', pts:3, status:'backlog', ac:'Fetches EIA API (free, requires key). Caches weekly. Falls back to national average. Shows current $/gal in UI.' },
+      { id:'GT-014', title:'Filing status, state, county picker', epic:'Driver Profile', type:'feature', pts:2, status:'backlog', ac:'All 50 states + DC. County shown only for MD (county tax applies). Saved to DriverProfile.' },
+      { id:'GT-015', title:'Location permission request with clear explanation', epic:'Driver Profile', type:'feature', pts:2, status:'backlog', ac:'Explains WHY always-on location is needed (auto trip detection). Links to Settings if denied.' },
+      { id:'GT-016', title:'Profile edit screen (accessible from Settings)', epic:'Driver Profile', type:'feature', pts:2, status:'backlog', ac:'All fields editable post-onboarding. Changes trigger tax recalc.' },
+    ]
+  },
+  {
+    id: 2,
+    title: 'S2 · GPS Trip Tracking',
+    dates: 'Week 3',
+    goal: '<strong>Goal:</strong> App auto-detects when driver starts moving and records the trip — including deadhead miles Uber/Lyft never count. CoreMotion classifies city vs. highway driving for accurate fuel estimates.',
+    stories: [
+      { id:'GT-017', title:'CLLocationManager background tracking service', epic:'Trip Tracking', type:'feature', pts:5, status:'backlog', ac:'Starts/stops cleanly. Uses significant-change + fine tracking combo to balance accuracy and battery.' },
+      { id:'GT-018', title:'Automatic trip start/stop detection (speed threshold + dwell time)', epic:'Trip Tracking', type:'feature', pts:5, status:'backlog', ac:'Trip starts when speed >5 mph for 30s. Trip ends after 3 min stationary. No false triggers in parking lots.' },
+      { id:'GT-019', title:'City vs. highway classification from GPS speed data', epic:'Trip Tracking', type:'feature', pts:3, status:'backlog', ac:'Speed <45 mph = city. ≥45 mph = highway. Stores ratio per trip. Used for EPA MPG weighting.' },
+      { id:'GT-020', title:'Fuel consumption estimate per trip (EPA MPG + city/hwy ratio)', epic:'Trip Tracking', type:'feature', pts:3, status:'backlog', ac:'Formula: (cityMiles/cityMPG + hwyMiles/hwyMPG) = gallons. Multiply by current EIA price = fuel cost.' },
+      { id:'GT-021', title:'Trip summary screen (map, distance, duration, fuel cost)', epic:'Trip Tracking', type:'feature', pts:3, status:'backlog', ac:'MapKit snapshot of route. All stats visible. Driver can tag as Business or Personal.' },
+      { id:'GT-022', title:'Trip list view (today, this week, all)', epic:'Trip Tracking', type:'feature', pts:2, status:'backlog', ac:'Grouped by date. Shows distance, fuel cost, platform tag if linked to a shift.' },
+      { id:'GT-023', title:'Manual trip entry (for missed auto-tracks)', epic:'Trip Tracking', type:'feature', pts:2, status:'backlog', ac:'Origin + destination + distance input. Calculates fuel cost. Marks as manually entered.' },
+      { id:'GT-024', title:'Battery usage optimization + background task scheduling', epic:'Trip Tracking', type:'chore', pts:3, status:'backlog', ac:'App uses <5% battery per hour during active tracking. Uses BGTaskScheduler for processing.' },
+      { id:'GT-025', title:'Unit tests: trip detection edge cases (short trips, parking, tunnels)', epic:'Trip Tracking', type:'test', pts:2, status:'backlog', ac:'Simulated location data. No false starts under 30s. No false ends under 3 min.' },
+    ]
+  },
+  {
+    id: 3,
+    title: 'S3 · Earnings Import',
+    dates: 'Week 4',
+    goal: '<strong>Goal:</strong> Driver can import earnings from Uber/Lyft CSV exports and log manual shifts for any platform. Tips, bonuses, and quests are tracked separately.',
+    stories: [
+      { id:'GT-026', title:'Uber earnings CSV parser (all column formats)', epic:'Earnings', type:'feature', pts:5, status:'backlog', ac:'Handles Uber driver CSV. Parses: trip date, base fare, tips, surge, bonuses. Creates Shift records.' },
+      { id:'GT-027', title:'Lyft earnings CSV parser', epic:'Earnings', type:'feature', pts:3, status:'backlog', ac:'Handles Lyft driver CSV format. Same output as Uber parser.' },
+      { id:'GT-028', title:'DoorDash / UberEats CSV parser', epic:'Earnings', type:'feature', pts:3, status:'backlog', ac:'Delivery platform CSVs. Includes base pay, tips, bonuses. Stores delivery miles if present.' },
+      { id:'GT-029', title:'File importer UI (drag-drop + file picker)', epic:'Earnings', type:'feature', pts:2, status:'backlog', ac:'FileImporter sheet. Supports CSV. Shows parse summary before confirming import.' },
+      { id:'GT-030', title:'Duplicate detection on import (same date + platform + amount)', epic:'Earnings', type:'feature', pts:2, status:'backlog', ac:'Warns driver before creating duplicates. Option to skip or overwrite.' },
+      { id:'GT-031', title:'Manual shift entry (platform, date, income, tips, bonuses)', epic:'Earnings', type:'feature', pts:3, status:'backlog', ac:'Form with all fields. Platform picker (Uber, Lyft, DoorDash, UberEats, Instacart, Grubhub, Other). Saves as Shift.' },
+      { id:'GT-032', title:'Late tips tracking (update earnings after shift ends)', epic:'Earnings', type:'feature', pts:2, status:'backlog', ac:'Driver can edit any past shift to add late tips. Timestamps the update. Recalculates totals.' },
+      { id:'GT-033', title:'Earnings list view (by shift, grouped by week/month)', epic:'Earnings', type:'feature', pts:2, status:'backlog', ac:'Shows gross, tips, bonuses per shift. Tap to expand or edit.' },
+      { id:'GT-034', title:'Platform earnings breakdown chart', epic:'Earnings', type:'feature', pts:2, status:'backlog', ac:'Swift Charts bar chart. Earnings by platform for selected period.' },
+    ]
+  },
+  {
+    id: 4,
+    title: 'S4 · Expense Tracking',
+    dates: 'Week 5',
+    goal: '<strong>Goal:</strong> Every deductible expense is tracked: fuel (auto-calculated from trips), phone, cleaning, maintenance, and anything else. The app knows exactly what the driver spent running their business.',
+    stories: [
+      { id:'GT-035', title:'Fuel expense auto-log from trip data (EIA price × gallons used)', epic:'Expenses', type:'feature', pts:3, status:'backlog', ac:'Each completed trip auto-creates a fuel expense entry. Shows $/gal used, gallons, total cost.' },
+      { id:'GT-036', title:'Manual expense entry (category, amount, date, notes, receipt photo)', epic:'Expenses', type:'feature', pts:3, status:'backlog', ac:'Categories: Fuel, Car Wash, Maintenance, Phone, Insurance, Accessories, Other. Receipt photo stored locally.' },
+      { id:'GT-037', title:'Recurring expense setup (monthly/yearly)', epic:'Expenses', type:'feature', pts:2, status:'backlog', ac:'Phone bill, cleaning service, etc. Set once, auto-logs monthly. Pro-rated for partial years.' },
+      { id:'GT-038', title:'Receipt photo capture + storage', epic:'Expenses', type:'feature', pts:2, status:'backlog', ac:'Camera or photo library. Stored in app sandbox. Linked to expense record.' },
+      { id:'GT-039', title:'Expense list view (by category, by date, by month)', epic:'Expenses', type:'feature', pts:2, status:'backlog', ac:'Grouped list. Filter by category or date range. Shows total per group.' },
+      { id:'GT-040', title:'Business use percentage for shared expenses (phone)', epic:'Expenses', type:'feature', pts:2, status:'backlog', ac:'Driver sets % of phone used for work. Applied automatically to phone expense deductions.' },
+      { id:'GT-041', title:'Expense category totals card', epic:'Expenses', type:'feature', pts:1, status:'backlog', ac:'Summary card showing YTD total per category. Visible on Expenses tab.' },
+      { id:'GT-042', title:'Import receipts from Files / Photos', epic:'Expenses', type:'feature', pts:2, status:'backlog', ac:'FileImporter + PHPicker. Supports PDF and image receipts.' },
+    ]
+  },
+  {
+    id: 5,
+    title: 'S5 · Tax Engine',
+    dates: 'Week 6',
+    goal: '<strong>Goal:</strong> A pure, fully-tested Swift tax calculation engine. Given any set of earnings and expenses, it returns accurate federal, state, county, and SE tax — for both Standard Mileage and Actual Expense methods.',
+    stories: [
+      { id:'GT-043', title:'TaxEngine struct: standard mileage method calculation', epic:'Tax Engine', type:'feature', pts:5, status:'backlog', ac:'Input: gross, IRS miles × $0.70, other deductions. Output: SE tax, AGI, federal tax, state tax, total.' },
+      { id:'GT-044', title:'TaxEngine struct: actual expense method calculation', epic:'Tax Engine', type:'feature', pts:5, status:'backlog', ac:'Input: gross, real fuel cost, maintenance, depreciation, insurance % of business use. Same outputs.' },
+      { id:'GT-045', title:'Federal income tax brackets (Single, MFJ, HOH — 2025/2026)', epic:'Tax Engine', type:'feature', pts:3, status:'backlog', ac:'All 7 brackets. All 3 filing statuses. Standard deductions: $15k/$30k/$22.5k.' },
+      { id:'GT-046', title:'All 50 states + DC income tax (flat or progressive brackets)', epic:'Tax Engine', type:'feature', pts:5, status:'backlog', ac:'Every state coded. No states (TX, FL, etc.) return 0. Progressive states use bracket logic.' },
+      { id:'GT-047', title:'Maryland county tax (all 24 jurisdictions)', epic:'Tax Engine', type:'feature', pts:2, status:'backlog', ac:'All MD county rates stored. Applied to MD taxable income.' },
+      { id:'GT-048', title:'Self-employment tax (15.3% × 92.35% of net)', epic:'Tax Engine', type:'feature', pts:2, status:'backlog', ac:'½ SE deduction applied before AGI. Matches IRS Schedule SE.' },
+      { id:'GT-049', title:'Quarterly estimated tax calculator (Q1–Q4 with due dates)', epic:'Tax Engine', type:'feature', pts:2, status:'backlog', ac:'Total tax ÷ 4. Due dates: Apr 15, Jun 15, Sep 15, Jan 15. Adjusts for YTD actuals.' },
+      { id:'GT-050', title:'Unit tests: all federal brackets × all filing statuses', epic:'Tax Engine', type:'test', pts:3, status:'backlog', ac:'Known IRS examples. Tolerance: ±$1.' },
+      { id:'GT-051', title:'Unit tests: SE tax, state tax, standard vs actual comparison', epic:'Tax Engine', type:'test', pts:3, status:'backlog', ac:'Round-trip tests. Same gross → same output every run.' },
+      { id:'GT-052', title:'Unit tests: quarterly split + pro-rated deductions', epic:'Tax Engine', type:'test', pts:2, status:'backlog', ac:'Verify quarterly amounts sum to annual total.' },
+      { id:'GT-093', title:'Quarterly payment tracker (log IRS payments with confirmation numbers)', epic:'Tax Engine', type:'feature', pts:2, status:'backlog', ac:'Driver logs each quarterly payment: date, amount, IRS confirmation #. Shows paid vs outstanding per quarter.' },
+    ]
+  },
+  {
+    id: 6,
+    title: 'S6 · Dashboard',
+    dates: 'Week 7',
+    goal: '<strong>Goal:</strong> The driver opens the app and instantly sees what matters: what they earned, what they owe, and how they\'re trending. Live, visual, and dead simple to read.',
+    stories: [
+      { id:'GT-053', title:'Dashboard header: YTD gross, net, total tax owed', epic:'Dashboard', type:'feature', pts:3, status:'backlog', ac:'Three large metric cards. Updates live when new shifts/trips are added.' },
+      { id:'GT-054', title:'Tax breakdown card (SE → federal → state → total)', epic:'Dashboard', type:'feature', pts:3, status:'backlog', ac:'Step-by-step waterfall from gross to total tax. Each line tappable for explanation.' },
+      { id:'GT-055', title:'Quarterly payment card (Q1–Q4, next due highlighted)', epic:'Dashboard', type:'feature', pts:2, status:'backlog', ac:'Grid of 4 quarters. Next upcoming payment pill-highlighted. Past due shown in red.' },
+      { id:'GT-056', title:'Deduction method toggle (Standard vs Actual) on dashboard', epic:'Dashboard', type:'feature', pts:2, status:'backlog', ac:'Segmented control. Switches all tax calcs live. Shows which saves more money.' },
+      { id:'GT-057', title:'Monthly earnings bar chart (Swift Charts)', epic:'Dashboard', type:'feature', pts:3, status:'backlog', ac:'12-month view. Bars colored by platform if only one platform, mixed otherwise.' },
+      { id:'GT-058', title:'Mileage tracked vs. platform-reported comparison card', epic:'Dashboard', type:'feature', pts:3, status:'backlog', ac:'Side by side: App miles (GPS) vs Uber/Lyft reported miles. Shows extra $ recovered.' },
+      { id:'GT-059', title:'Effective tax rate pill + marginal bracket badge', epic:'Dashboard', type:'feature', pts:1, status:'backlog', ac:'Shows "Effective: 18.4%" and "Marginal: 22% bracket" in header area.' },
+      { id:'GT-060', title:'Year selector (switch between tax years)', epic:'Dashboard', type:'feature', pts:1, status:'backlog', ac:'Picker in nav bar. Filters all data by selected tax year.' },
+      { id:'GT-061', title:'Empty state (no shifts yet — animated prompt)', epic:'Dashboard', type:'design', pts:1, status:'backlog', ac:'Friendly illustration + "Import your earnings to get started" CTA.' },
+      { id:'GT-090', title:'Net hourly rate card (gross and net earnings per hour)', epic:'Dashboard', type:'feature', pts:3, status:'backlog', ac:'Driver logs hours per shift. Card shows: gross/hr and net/hr after all expenses and taxes. Honest number platforms never show.' },
+      { id:'GT-091', title:'Platform profitability comparison (net $/hr by platform)', epic:'Dashboard', type:'feature', pts:3, status:'backlog', ac:'Ranks platforms by net hourly rate from driver\'s own data. "DoorDash: $14.20/hr net vs Uber: $12.80/hr net." Updates live.' },
+      { id:'GT-092', title:'Tax savings jar (set-aside recommendation per paycheck)', epic:'Dashboard', type:'feature', pts:2, status:'backlog', ac:'After each import, shows: "Set aside $X (25%) from this week\'s $Y earnings." Running savings target shown as progress bar.' },
+      { id:'GT-097', title:'Earnings pattern insights (best days/hours from personal history)', epic:'Dashboard', type:'feature', pts:3, status:'backlog', ac:'From driver\'s own shift history: best earning day of week, best time of day, best platform per time slot. Min 4 weeks data required.' },
+    ]
+  },
+  {
+    id: 7,
+    title: 'S7 · Deduction Optimizer & Audit Shield',
+    dates: 'Week 8',
+    goal: '<strong>Goal:</strong> The two features that set GigTax apart. Optimizer tells drivers which deduction method saves more money. Audit Shield generates an IRS-compliant mileage log so drivers can deduct confidently.',
+    stories: [
+      { id:'GT-062', title:'Deduction Optimizer screen (Standard vs Actual side-by-side)', epic:'Deductions', type:'feature', pts:5, status:'backlog', ac:'Full-screen comparison. Shows: method name, total deductions, taxable income, total tax, net savings. Recommends better option with explanation.' },
+      { id:'GT-063', title:'Breakeven mileage calculator (when actual beats standard)', epic:'Deductions', type:'feature', pts:3, status:'backlog', ac:'Shows at what annual mileage actual expenses become more valuable. Visual threshold line on chart.' },
+      { id:'GT-064', title:'IRS-compliant mileage log (date, origin, destination, purpose, miles)', epic:'Deductions', type:'feature', pts:3, status:'backlog', ac:'Every trip auto-populates the log. Business purpose field required for each. Sortable and searchable.' },
+      { id:'GT-065', title:'Mileage log PDF export (formatted for IRS audit)', epic:'Deductions', type:'feature', pts:3, status:'backlog', ac:'PDF with driver name, vehicle, year, all trips tabulated. ShareLink to share or save.' },
+      { id:'GT-066', title:'Audit Shield explainer screen', epic:'Deductions', type:'feature', pts:2, status:'backlog', ac:'Explains what triggers audits, how the mileage log protects them, and what records to keep. Plain English.' },
+      { id:'GT-067', title:'Schedule C summary screen (all deduction lines)', epic:'Deductions', type:'feature', pts:3, status:'backlog', ac:'Maps to actual IRS Schedule C lines. Shows exactly what to enter on each line.' },
+      { id:'GT-068', title:'Full data export: CSV + JSON backup', epic:'Deductions', type:'feature', pts:2, status:'backlog', ac:'Export all shifts, trips, expenses. ShareLink. JSON is re-importable.' },
+      { id:'GT-069', title:'Year-end checklist (missing info, untagged trips, etc.)', epic:'Deductions', type:'feature', pts:2, status:'backlog', ac:'Surfaced in December / Q4. Lists: untagged trips, missing odometer, unlinked receipts.' },
+      { id:'GT-094', title:'Vehicle depreciation tracker (Section 179 / MACRS)', epic:'Deductions', type:'feature', pts:5, status:'backlog', ac:'Calculates annual depreciation based on vehicle cost, placed-in-service date, and business use %. Feeds into actual expense method. Explains Section 179 in plain English.' },
+      { id:'GT-095', title:'SEP-IRA / Solo 401k contribution guide and deduction calculator', epic:'Deductions', type:'feature', pts:3, status:'backlog', ac:'Explains retirement accounts available to self-employed. Calculates max contribution (25% of net SE income, up to $70k). Shows how much it reduces taxable income.' },
+      { id:'GT-096', title:'What-if simulator (drive more → save more)', epic:'Deductions', type:'feature', pts:3, status:'backlog', ac:'Slider: "What if I drove X more miles this month?" Shows updated deduction, tax savings, and net income delta. Motivates tracking.' },
+    ]
+  },
+  {
+    id: 8,
+    title: 'S8 · iOS-Only Features',
+    dates: 'Week 9',
+    goal: '<strong>Goal:</strong> Features that make GigTax feel native and indispensable: home screen widgets, quarterly tax reminders, Siri shortcuts to log a shift in seconds, and Face ID to protect earnings data.',
+    stories: [
+      { id:'GT-070', title:'Small widget: today\'s earnings + miles', epic:'iOS Features', type:'feature', pts:3, status:'backlog', ac:'Updates every 30 min. Shows today gross + miles driven today.' },
+      { id:'GT-071', title:'Medium widget: YTD tax owed + next quarterly due date', epic:'iOS Features', type:'feature', pts:3, status:'backlog', ac:'Two columns. Next Q payment highlighted. Taps into Dashboard.' },
+      { id:'GT-072', title:'Quarterly tax due date push notifications', epic:'iOS Features', type:'feature', pts:3, status:'backlog', ac:'4 notifications per year: 7 days before and day-of. Configurable in Settings. Shows amount due.' },
+      { id:'GT-073', title:'Notification permission + settings screen', epic:'iOS Features', type:'feature', pts:1, status:'backlog', ac:'Permission requested at end of onboarding. Settings toggle to enable/disable each reminder.' },
+      { id:'GT-074', title:'Siri shortcut: "Log a shift" (App Intents)', epic:'iOS Features', type:'feature', pts:3, status:'backlog', ac:'Opens log shift form pre-filled with last platform. Works from Siri and Shortcuts app.' },
+      { id:'GT-075', title:'Siri shortcut: "How much do I owe in taxes?"', epic:'iOS Features', type:'feature', pts:2, status:'backlog', ac:'Returns spoken + visual answer with total tax owed and next quarterly amount.' },
+      { id:'GT-076', title:'Face ID / Touch ID app lock', epic:'iOS Features', type:'feature', pts:3, status:'backlog', ac:'Locks on background. Requires biometric on foreground. Fallback to passcode. Toggle in Settings.' },
+      { id:'GT-077', title:'Live Activity: active trip in progress (Dynamic Island)', epic:'iOS Features', type:'feature', pts:3, status:'backlog', ac:'Shows miles and estimated fuel cost in real time while trip is being tracked.' },
+    ]
+  },
+  {
+    id: 9,
+    title: 'S9 · Polish & App Store',
+    dates: 'Week 10',
+    goal: '<strong>Goal:</strong> GigTax ships looking and feeling like a $10/month app. Accessibility, iPad layout, beautiful onboarding, App Store listing, and TestFlight beta. Ready for review.',
+    stories: [
+      { id:'GT-078', title:'Dynamic Type support (all text scales)', epic:'Polish', type:'chore', pts:2, status:'backlog', ac:'All text uses .body/.headline etc. No truncation at largest sizes.' },
+      { id:'GT-079', title:'VoiceOver accessibility labels on all interactive elements', epic:'Polish', type:'chore', pts:2, status:'backlog', ac:'Audit with VoiceOver on device. All cards, buttons, charts labeled.' },
+      { id:'GT-080', title:'iPad adaptive layout (sidebar navigation)', epic:'Polish', type:'feature', pts:3, status:'backlog', ac:'NavigationSplitView on iPad. Sidebar shows tabs. Detail shows selected screen.' },
+      { id:'GT-081', title:'App icon (all sizes, dark + tinted variants)', epic:'Polish', type:'design', pts:2, status:'backlog', ac:'iOS 18 adaptive icon. Works on all wallpapers. Exported to all required sizes.' },
+      { id:'GT-082', title:'Onboarding illustration set (3–4 screens)', epic:'Polish', type:'design', pts:3, status:'backlog', ac:'Explains: auto-tracking, deduction optimizer, tax estimate. Consistent style with app.' },
+      { id:'GT-083', title:'Haptic feedback on key actions (save, delete, import complete)', epic:'Polish', type:'chore', pts:1, status:'backlog', ac:'UIImpactFeedbackGenerator .medium on save. .rigid on delete confirm.' },
+      { id:'GT-084', title:'Skeleton loading states (shimmer while fetching EPA/EIA data)', epic:'Polish', type:'design', pts:2, status:'backlog', ac:'No blank screens during API calls. Redacted-style shimmer placeholders.' },
+      { id:'GT-085', title:'Error handling: no internet, API timeout, bad CSV format', epic:'Polish', type:'chore', pts:2, status:'backlog', ac:'All network calls have timeouts. User-facing error messages. Retry buttons.' },
+      { id:'GT-086', title:'App Store screenshots (6.7" iPhone + 13" iPad)', epic:'Polish', type:'chore', pts:2, status:'backlog', ac:'5 screenshots per device. Show: Dashboard, Trip tracking, Optimizer, Audit Shield, Onboarding.' },
+      { id:'GT-087', title:'App Store description, keywords, privacy policy URL', epic:'Polish', type:'chore', pts:2, status:'backlog', ac:'Description under 4000 chars. 100 char keyword field filled. Privacy policy hosted.' },
+      { id:'GT-088', title:'TestFlight internal build + end-to-end smoke test', epic:'Polish', type:'test', pts:3, status:'backlog', ac:'Full flow: onboard → track trip → import CSV → view taxes → export mileage log.' },
+      { id:'GT-089', title:'App Store submission', epic:'Polish', type:'chore', pts:1, status:'backlog', ac:'Build submitted. No rejection reasons. Review typically 1–3 days.' },
+    ]
+  },
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let currentSprint = 0;
+let currentView = 'board';
+let epicFilter = 'all';
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+const epicColor = e => EPICS[e] || '#8b949e';
+const statusColor = s => STATUS_META[s]?.dot || '#8b949e';
+const allStories = () => SPRINTS.flatMap(s => s.stories);
+const visibleStories = () => epicFilter === 'all' ? allStories() : allStories().filter(s => s.epic === epicFilter);
+
+function updateProgress() {
+  const stories = visibleStories();
+  const done = stories.filter(s => s.status === 'done').length;
+  const total = stories.length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('overall-bar').style.width = pct + '%';
+  document.getElementById('overall-pct').textContent = pct + '%';
+  document.getElementById('overall-stories').textContent = `${done}/${total} stories`;
+  document.getElementById('sidebar-bar').style.width = pct + '%';
+  document.getElementById('sidebar-pct').textContent = pct + '% complete';
+}
+
+// ─── BOARD ───────────────────────────────────────────────────────────────────
+function renderBoard() {
+  const sprint = SPRINTS[currentSprint];
+  document.getElementById('board-title').textContent = sprint.title;
+  document.getElementById('board-dates').textContent = sprint.dates;
+  document.getElementById('board-goal').innerHTML = sprint.goal;
+
+  let stories = sprint.stories;
+  if (epicFilter !== 'all') stories = stories.filter(s => s.epic === epicFilter);
+
+  const pts = stories.reduce((a,s) => a + s.pts, 0);
+  document.getElementById('board-pts').textContent = pts + ' story points';
+
+  const byStatus = {};
+  STATUS_ORDER.forEach(k => byStatus[k] = stories.filter(s => s.status === k));
+
+  const done = byStatus.done.length;
+  document.getElementById('stats-row').innerHTML =
+    STATUS_ORDER.map(k => `
+      <div class="stat-card">
+        <div class="stat-val" style="color:${statusColor(k)}">${byStatus[k].length}</div>
+        <div class="stat-lbl">${STATUS_META[k].label}</div>
+      </div>`).join('') +
+    `<div class="stat-card" style="margin-left:auto">
+      <div class="stat-val">${stories.length ? Math.round(done/stories.length*100) : 0}%</div>
+      <div class="stat-lbl">Sprint Done</div>
+    </div>`;
+
+  const epicsHere = [...new Set(stories.map(s => s.epic))];
+  document.getElementById('epic-bar').innerHTML = epicsHere.map(e =>
+    `<div class="epic-chip"><span class="chip-dot" style="background:${epicColor(e)}"></span>${e}</div>`
+  ).join('');
+
+  document.getElementById('board').innerHTML = STATUS_ORDER.map(k => `
+    <div class="column">
+      <div class="col-header">
+        <div class="col-title"><span class="col-dot" style="background:${statusColor(k)}"></span>${STATUS_META[k].label}</div>
+        <span class="col-count">${byStatus[k].length}</span>
+      </div>
+      <div class="col-cards">${byStatus[k].map(cardHTML).join('')}</div>
+    </div>`).join('');
+
+  updateProgress();
+}
+
+function cardHTML(c) {
+  return `<div class="card" onclick="cycleStatus('${c.id}')">
+    <div class="card-epic" style="color:${epicColor(c.epic)}">${c.epic}</div>
+    <div class="card-title">${c.title}</div>
+    ${c.ac ? `<div class="card-ac">${c.ac}</div>` : ''}
+    <div class="card-footer">
+      <span class="card-id">${c.id}</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <span class="card-type type-${c.type}">${c.type}</span>
+        <span class="card-points">${c.pts}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── BACKLOG ─────────────────────────────────────────────────────────────────
+function renderBacklog() {
+  let totalS = 0, totalP = 0;
+  document.getElementById('backlog-content').innerHTML = SPRINTS.map(sprint => {
+    let stories = sprint.stories;
+    if (epicFilter !== 'all') stories = stories.filter(s => s.epic === epicFilter);
+    if (!stories.length) return '';
+    const pts = stories.reduce((a,s) => a + s.pts, 0);
+    totalS += stories.length; totalP += pts;
+    return `<div class="backlog-sprint-group">
+      <div class="backlog-sprint-title">
+        ${sprint.title} <span class="sp-pts">${stories.length} stories · ${pts} pts</span>
+      </div>
+      ${stories.map(s => `
+        <div class="backlog-row" onclick="cycleStatus('${s.id}')">
+          <span class="br-id">${s.id}</span>
+          <span class="br-title">${s.title}</span>
+          <span class="br-epic" style="color:${epicColor(s.epic)};border:1px solid ${epicColor(s.epic)}44">${s.epic}</span>
+          <span class="card-type type-${s.type} br-type">${s.type}</span>
+          <span class="br-pts">${s.pts}</span>
+          <span class="br-status" style="color:${statusColor(s.status)}">${STATUS_META[s.status].label}</span>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+  document.getElementById('backlog-summary').textContent = `${totalS} stories · ${totalP} total story points`;
+  updateProgress();
+}
+
+// ─── ROADMAP ─────────────────────────────────────────────────────────────────
+function renderRoadmap() {
+  const epics = Object.keys(EPICS);
+  const cols = SPRINTS.length;
+  document.getElementById('roadmap-content').style.gridTemplateColumns = `180px repeat(${cols}, 1fr)`;
+
+  const epicSprints = {};
+  epics.forEach(e => {
+    epicSprints[e] = SPRINTS.map(sp => ({
+      count: sp.stories.filter(s => s.epic === e).length,
+      done:  sp.stories.filter(s => s.epic === e && s.status === 'done').length,
+    }));
+  });
+
+  document.getElementById('roadmap-content').innerHTML =
+    `<div class="rg-header">Epic</div>` +
+    SPRINTS.map(s => `<div class="rg-header">${s.title.split('·')[0].trim()}</div>`).join('') +
+    epics.map(e => {
+      if (epicFilter !== 'all' && epicFilter !== e) return '';
+      return `<div class="rg-cell rg-epic-label">
+          <span style="width:8px;height:8px;border-radius:50%;background:${epicColor(e)};display:inline-block;flex-shrink:0"></span>${e}
+        </div>` +
+        epicSprints[e].map(({count, done}) => {
+          if (!count) return '<div class="rg-cell"></div>';
+          const full = done === count;
+          return `<div class="rg-cell"><div class="rg-bar" style="background:${full ? epicColor(e) : epicColor(e)+'33'};color:${full ? '#000' : epicColor(e)}">${count} stor${count===1?'y':'ies'}</div></div>`;
+        }).join('');
+    }).join('');
+
+  updateProgress();
+}
+
+// ─── INTERACTIONS ─────────────────────────────────────────────────────────────
+function cycleStatus(id) {
+  const story = allStories().find(s => s.id === id);
+  if (!story) return;
+  story.status = STATUS_ORDER[(STATUS_ORDER.indexOf(story.status) + 1) % STATUS_ORDER.length];
+  renderCurrent();
+}
+
+function changeSprint(v) {
+  currentSprint = parseInt(v);
+  renderCurrent();
+}
+
+function switchView(view, el) {
+  currentView = view;
+  ['board','backlog','roadmap'].forEach(v => {
+    document.getElementById('view-'+v).classList.toggle('hidden', v !== view);
+    document.getElementById('vbtn-'+v)?.classList.toggle('active', v === view);
+  });
+  document.querySelectorAll('.sidebar-item').forEach(i => {
+    const t = i.textContent.trim().toLowerCase();
+    if (t === view) i.classList.add('active');
+    else if (['board','backlog','roadmap'].includes(t)) i.classList.remove('active');
+  });
+  renderCurrent();
+}
+
+function filterEpic(epic, el) {
+  epicFilter = epic;
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderCurrent();
+}
+
+function renderCurrent() {
+  if (currentView === 'board') renderBoard();
+  else if (currentView === 'backlog') renderBacklog();
+  else renderRoadmap();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+const sel = document.getElementById('sprint-select');
+SPRINTS.forEach(s => {
+  const o = document.createElement('option');
+  o.value = s.id; o.textContent = s.title;
+  sel.appendChild(o);
+});
+renderBoard();
+</script>
+</body>
+</html>
