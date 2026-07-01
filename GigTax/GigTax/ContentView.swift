@@ -8,22 +8,24 @@
 import SwiftUI
 
 struct ContentView: View {
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+
     var body: some View {
-        TabView {
-            DashboardView()
-                .tabItem { Label("Dashboard", systemImage: "chart.bar.fill") }
-
-            TripsView()
-                .tabItem { Label("Trips", systemImage: "location.fill") }
-
-            EarningsView()
-                .tabItem { Label("Earnings", systemImage: "dollarsign.circle.fill") }
-
-            ExpensesView()
-                .tabItem { Label("Expenses", systemImage: "receipt.fill") }
-
-            SettingsView()
-                .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+        if hasCompletedOnboarding {
+            TabView {
+                DashboardView()
+                    .tabItem { Label("Dashboard", systemImage: "chart.bar.fill") }
+                TripsView()
+                    .tabItem { Label("Trips", systemImage: "location.fill") }
+                EarningsView()
+                    .tabItem { Label("Earnings", systemImage: "dollarsign.circle.fill") }
+                ExpensesView()
+                    .tabItem { Label("Expenses", systemImage: "receipt.fill") }
+                SettingsView()
+                    .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+            }
+        } else {
+            OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
         }
     }
 }
