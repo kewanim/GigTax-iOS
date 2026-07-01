@@ -159,12 +159,19 @@ Change `[NOT STARTED]` → `[IN PROGRESS]` → `[DONE]`
 
 ## Files in This Project
 
+**Location:** iCloud Drive → Kewani → Personal Projects → iOS Apps → GigTax
+
 ```
-/Users/kewani/Projects/GigTax-iOS/
+GigTax/
 ├── CLAUDE.md      ← Instructions for Claude (AI assistant context)
 ├── PROJECT.md     ← This file. Your project reference.
 ├── board.html     ← Visual project board (open in browser)
 ```
+
+Full Mac path:
+`/Users/kewani/Library/Mobile Documents/com~apple~CloudDocs/Kewani/Personal Projects/iOS Apps/GigTax/`
+
+GitHub: https://github.com/kewanim/GigTax-iOS
 
 ---
 

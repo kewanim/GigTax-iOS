@@ -50,6 +50,10 @@ Reference the web app for feature parity, tax logic, and Firebase config.
   - Maintenance: $40/month
   - Phone purchase: $1,350/year
 
+## Project Location
+- **iCloud:** iCloud Drive → Kewani → Personal Projects → iOS Apps → GigTax
+- **GitHub:** https://github.com/kewanim/GigTax-iOS
+
 ## Developer Info
 - Developer: Kewani Mulugeta
 - Apple ID: kewanim40@gmail.com
