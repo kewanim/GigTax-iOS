@@ -8,6 +8,7 @@ struct VehicleSetupView: View {
     @State private var makes: [NHTSAMake] = []
     @State private var models: [NHTSAModel] = []
     @State private var epaOptions: [EPAVehicleOption] = []
+    @State private var optionMPGs: [String: EPAMPGResult] = [:]
     @State private var selectedMake: NHTSAMake?
     @State private var selectedModel: NHTSAModel?
     @State private var selectedEPAOption: EPAVehicleOption?
@@ -113,18 +114,22 @@ struct VehicleSetupView: View {
                             }
                         }
                     } else if epaOptions.count > 1 {
-                        Section("Drivetrain") {
-                            Picker("Drivetrain", selection: $selectedEPAOption) {
+                        Section {
+                            Picker("Configuration", selection: $selectedEPAOption) {
                                 ForEach(epaOptions) { opt in
-                                    Text(simplifiedLabel(opt.text)).tag(Optional(opt))
+                                    Text(optionLabel(opt)).tag(Optional(opt))
                                 }
                             }
                             .pickerStyle(.inline)
                             .onChange(of: selectedEPAOption) { _, new in
-                                if let opt = new { Task { await loadMPG(option: opt) } }
+                                if let opt = new, let mpg = optionMPGs[opt.id] {
+                                    data.cityMPG = mpg.cityMPG
+                                    data.highwayMPG = mpg.highwayMPG
+                                }
                             }
-                        }
-                    }
+                            Text("Note: LE/XLE/XSE trim names aren't in EPA data. Pick by drivetrain and MPG — all trims of the same drivetrain get the same fuel economy rating.")
+                                .font(.caption).foregroundStyle(.secondary)
+                        } header: { Text("Engine / Drivetrain") }
 
                     Section("Fuel Economy (MPG)") {
                         LabeledContent("City MPG") {
@@ -160,6 +165,7 @@ struct VehicleSetupView: View {
                     }
                 }
             }
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -173,6 +179,14 @@ struct VehicleSetupView: View {
             }
         }
         .task { await loadMakes() }
+    }
+
+    private func optionLabel(_ opt: EPAVehicleOption) -> String {
+        var label = simplifiedLabel(opt.text)
+        if let mpg = optionMPGs[opt.id] {
+            label += " — \(Int(mpg.cityMPG))/\(Int(mpg.highwayMPG)) mpg"
+        }
+        return label
     }
 
     // Converts EPA technical description to plain drivetrain label
@@ -230,22 +244,29 @@ struct VehicleSetupView: View {
                     model: model.name
                 )
                 epaOptions = options
-                // Auto-load MPG from first option immediately — no manual selection needed for single option
+
+                // Fetch MPG for all options in parallel
+                await withTaskGroup(of: (String, EPAMPGResult?).self) { group in
+                    for opt in options {
+                        group.addTask { (opt.id, try? await EPAService.shared.fetchMPG(vehicleId: opt.id)) }
+                    }
+                    for await (id, result) in group {
+                        if let r = result { optionMPGs[id] = r }
+                    }
+                }
+
+                // Auto-select first option
                 if let first = options.first {
                     selectedEPAOption = first
-                    await loadMPG(option: first)
+                    if let mpg = optionMPGs[first.id] {
+                        data.cityMPG = mpg.cityMPG
+                        data.highwayMPG = mpg.highwayMPG
+                    }
                 }
             } catch {
                 mpgError = true
             }
             isLoadingMPG = false
-        }
-    }
-
-    private func loadMPG(option: EPAVehicleOption) async {
-        if let result = try? await EPAService.shared.fetchMPG(vehicleId: option.id) {
-            data.cityMPG = result.cityMPG
-            data.highwayMPG = result.highwayMPG
         }
     }
 
@@ -255,16 +276,16 @@ struct VehicleSetupView: View {
         epaOptions = []; data.cityMPG = 0; data.highwayMPG = 0
         selectedEPAOption = nil; models = []
     }
-}
 
-private func stepHeader(number: String, title: String, subtitle: String) -> some View {
-    VStack(alignment: .leading, spacing: 6) {
-        Text("Step \(number) of 4").font(.caption).foregroundStyle(.secondary).textCase(.uppercase)
-        Text(title).font(.title2).fontWeight(.bold)
-        Text(subtitle).font(.subheadline).foregroundStyle(.secondary)
+    private func stepHeader(number: String, title: String, subtitle: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Step \(number) of 4").font(.caption).foregroundStyle(.secondary).textCase(.uppercase)
+            Text(title).font(.title2).fontWeight(.bold)
+            Text(subtitle).font(.subheadline).foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
     }
-    .padding(.horizontal, 16)
-    .padding(.vertical, 12)
 }
 
 #Preview {

@@ -1,14 +1,12 @@
-//
-//  ContentView.swift
-//  GigTax
-//
-//  Created by Kewani Mulugeta on 7/1/26.
-//
-
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @Environment(\.modelContext) private var modelContext
+    @State private var locationService = LocationService()
+
+    @Query private var vehicles: [Vehicle]
 
     var body: some View {
         if hasCompletedOnboarding {
@@ -23,6 +21,15 @@ struct ContentView: View {
                     .tabItem { Label("Expenses", systemImage: "receipt.fill") }
                 SettingsView()
                     .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+            }
+            .environment(locationService)
+            .task {
+                locationService.modelContext = modelContext
+                if let v = vehicles.first {
+                    locationService.cityMPG    = v.cityMPG
+                    locationService.highwayMPG = v.highwayMPG
+                }
+                locationService.startMonitoring()
             }
         } else {
             OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
