@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ProfileSetupView: View {
-    var data: OnboardingData
+    @Bindable var data: OnboardingData
     let onNext: () -> Void
     let onBack: () -> Void
 

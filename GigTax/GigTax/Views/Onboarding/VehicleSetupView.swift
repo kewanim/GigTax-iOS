@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct VehicleSetupView: View {
-    var data: OnboardingData
+    @Bindable var data: OnboardingData
     let onNext: () -> Void
     let onBack: () -> Void
 
@@ -60,7 +60,7 @@ struct VehicleSetupView: View {
                                 Text(make.name).fontWeight(.semibold)
                                 Spacer()
                                 Button("Change") { selectedMake = nil; data.makeName = ""; models = []; selectedModel = nil; data.modelName = "" }
-                                    .font(.caption).foregroundStyle(.accentColor)
+                                    .font(.caption).foregroundStyle(Color.accentColor)
                             }
                         } else {
                             TextField("Search makes…", text: $makeSearch)
@@ -82,7 +82,7 @@ struct VehicleSetupView: View {
                                 Text(model.name).fontWeight(.semibold)
                                 Spacer()
                                 Button("Change") { selectedModel = nil; data.modelName = ""; epaOptions = []; data.cityMPG = 0; data.highwayMPG = 0 }
-                                    .font(.caption).foregroundStyle(.accentColor)
+                                    .font(.caption).foregroundStyle(Color.accentColor)
                             }
                         } else {
                             TextField("Search models…", text: $modelSearch)
