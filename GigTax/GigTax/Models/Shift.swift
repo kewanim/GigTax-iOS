@@ -15,6 +15,7 @@ final class Shift {
     var taxYear: Int
     var linkedTripID: UUID?
     var importedMiles: Double?  // delivery miles reported by the platform CSV, if present
+    var lastModified: Date?  // set when a driver edits a shift after creation (e.g. late tips)
 
     var platform: Platform {
         get { Platform(rawValue: platformRaw) ?? .other }
