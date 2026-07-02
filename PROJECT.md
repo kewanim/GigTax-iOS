@@ -115,7 +115,7 @@ Week 2  → S1: Driver Profile        [DONE]
 Week 3  → S2: GPS Trip Tracking     [DONE]
            Auto start/stop, deadhead miles, fuel calc, battery optimization
 
-Week 4  → S3: Earnings Import       [NOT STARTED]
+Week 4  → S3: Earnings Import       [DONE]
            Uber/Lyft/DoorDash CSV parsers, manual entry, tips
 
 Week 5  → S4: Expense Tracking      [NOT STARTED]
@@ -144,9 +144,9 @@ Change `[NOT STARTED]` → `[IN PROGRESS]` → `[DONE]`
 
 ## Current Status
 
-**Stage:** Building — S0, S1, S2 complete
-**Last worked on:** S2 GPS trip tracking (battery-optimized power mode, BGTaskScheduler background maintenance, trip-detection unit tests)
-**Next step:** S3 — Earnings Import (Uber/Lyft/DoorDash CSV parsers)
+**Stage:** Building — S0, S1, S2, S3 complete
+**Last worked on:** S3 Earnings Import (Uber/Lyft/DoorDash CSV parsers, import UI with drag-and-drop, duplicate detection, manual shift entry/editing, platform earnings chart)
+**Next step:** S4 — Expense Tracking (fuel auto-log, receipts, recurring expenses)
 
 **Open questions / decisions still to make:**
 - [ ] Free / paid / subscription pricing model
