@@ -4,7 +4,7 @@ import SwiftData
 struct ContentView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @Environment(\.modelContext) private var modelContext
-    @State private var locationService = LocationService()
+    @Environment(LocationService.self) private var locationService
 
     @Query private var vehicles: [Vehicle]
 
@@ -22,7 +22,6 @@ struct ContentView: View {
                 SettingsView()
                     .tabItem { Label("Settings", systemImage: "gearshape.fill") }
             }
-            .environment(locationService)
             .task {
                 locationService.modelContext = modelContext
                 if let v = vehicles.first {
@@ -39,4 +38,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environment(LocationService())
 }

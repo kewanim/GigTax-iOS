@@ -34,6 +34,17 @@ final class LocationService: NSObject {
     private let startDwell: TimeInterval = 30    // 30 s moving → trip starts
     private let stopDwell:  TimeInterval = 180   // 3 min stopped → trip ends
 
+    // MARK: - Power mode
+    // Idle drivers spend most of the day parked. Significant-change monitoring
+    // (~500 m / few-minute resolution, very low power) is used until a wake-up
+    // suggests real movement, at which point we switch to fine-grained updates
+    // to evaluate a possible trip. If nothing materializes, we drop back down.
+    private enum PowerMode { case lowPower, evaluating, active }
+    private var powerMode: PowerMode = .lowPower
+    private var evaluationTask: Task<Void, Never>?
+    private let evaluationWindow: TimeInterval = 120
+    private let staleTrackingInterval: TimeInterval = 3600
+
     override init() {
         super.init()
         manager.delegate = self
@@ -43,20 +54,68 @@ final class LocationService: NSObject {
     func startMonitoring() {
         manager.allowsBackgroundLocationUpdates = true
         manager.pausesLocationUpdatesAutomatically = false
-        manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-        manager.distanceFilter = 50
+        enterLowPowerMode()
+    }
+
+    /// Runs on a periodic BGProcessingTask: persists any pending SwiftData
+    /// changes and finalizes a trip that's gone stale (e.g. the app was
+    /// suspended mid-trip) so accumulated mileage isn't lost.
+    func performBackgroundMaintenance() {
+        try? modelContext?.save()
+
+        if isTracking, let last = lastLoc,
+           Date().timeIntervalSince(last.timestamp) > staleTrackingInterval {
+            endTrip(at: last)
+        }
+    }
+
+    // MARK: - Power mode transitions
+
+    private func enterLowPowerMode() {
+        powerMode = .lowPower
+        evaluationTask?.cancel()
+        manager.stopUpdatingLocation()
+        if CLLocationManager.significantLocationChangeMonitoringAvailable() {
+            manager.startMonitoringSignificantLocationChanges()
+        } else {
+            enterActiveMode(accuracy: kCLLocationAccuracyHundredMeters, distanceFilter: 100)
+        }
+    }
+
+    private func enterActiveMode(accuracy: CLLocationAccuracy, distanceFilter: CLLocationDistance) {
+        manager.stopMonitoringSignificantLocationChanges()
+        manager.desiredAccuracy = accuracy
+        manager.distanceFilter  = distanceFilter
         manager.startUpdatingLocation()
+    }
+
+    private func scheduleEvaluationTimeout() {
+        evaluationTask?.cancel()
+        let window = evaluationWindow
+        evaluationTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(window))
+            guard let self, !Task.isCancelled else { return }
+            if self.powerMode == .evaluating && !self.isTracking {
+                self.enterLowPowerMode()
+            }
+        }
     }
 
     // MARK: - Trip lifecycle
 
-    private func process(_ loc: CLLocation) {
+    func process(_ loc: CLLocation) {
         let speed = max(0, loc.speed)
 
         if !isTracking {
+            if powerMode == .lowPower {
+                powerMode = .evaluating
+                enterActiveMode(accuracy: kCLLocationAccuracyHundredMeters, distanceFilter: 50)
+                scheduleEvaluationTimeout()
+            }
+
             if speed > startSpeedMS {
-                if movingStart == nil { movingStart = Date() }
-                if let ms = movingStart, Date().timeIntervalSince(ms) >= startDwell {
+                if movingStart == nil { movingStart = loc.timestamp }
+                if let ms = movingStart, loc.timestamp.timeIntervalSince(ms) >= startDwell {
                     beginTrip(at: loc)
                 }
             } else {
@@ -71,8 +130,8 @@ final class LocationService: NSObject {
                 currentTripMiles = totalMilesAcc
             }
             if speed < stopSpeedMS {
-                if stationaryStart == nil { stationaryStart = Date() }
-                if let ss = stationaryStart, Date().timeIntervalSince(ss) >= stopDwell {
+                if stationaryStart == nil { stationaryStart = loc.timestamp }
+                if let ss = stationaryStart, loc.timestamp.timeIntervalSince(ss) >= stopDwell {
                     endTrip(at: loc)
                 }
             } else {
@@ -83,29 +142,32 @@ final class LocationService: NSObject {
     }
 
     private func beginTrip(at loc: CLLocation) {
+        evaluationTask?.cancel()
+        powerMode = .active
         isTracking = true
-        currentTripStart = Date()
+        currentTripStart = loc.timestamp
         tripStartLoc = loc
         cityMilesAcc = 0; hwyMilesAcc = 0; totalMilesAcc = 0
         currentTripMiles = 0; stationaryStart = nil
-        manager.desiredAccuracy = kCLLocationAccuracyBest
-        manager.distanceFilter  = 10
+        enterActiveMode(accuracy: kCLLocationAccuracyBest, distanceFilter: 10)
     }
 
     private func endTrip(at loc: CLLocation) {
         guard let start = currentTripStart, totalMilesAcc > 0.1 else {
-            resetState(); return
+            resetState()
+            enterLowPowerMode()
+            return
         }
         let gallons  = (cityMPG  > 0 ? cityMilesAcc  / cityMPG  : 0)
                      + (highwayMPG > 0 ? hwyMilesAcc / highwayMPG : 0)
-        let duration = Date().timeIntervalSince(start)
+        let duration = loc.timestamp.timeIntervalSince(start)
 
         let trip = Trip(
             startDate:      start,
             startLatitude:  tripStartLoc?.coordinate.latitude  ?? 0,
             startLongitude: tripStartLoc?.coordinate.longitude ?? 0
         )
-        trip.endDate              = Date()
+        trip.endDate              = loc.timestamp
         trip.endLatitude          = loc.coordinate.latitude
         trip.endLongitude         = loc.coordinate.longitude
         trip.distanceMiles        = totalMilesAcc
@@ -120,8 +182,7 @@ final class LocationService: NSObject {
         try? modelContext?.save()
 
         resetState()
-        manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-        manager.distanceFilter  = 50
+        enterLowPowerMode()
     }
 
     private func resetState() {

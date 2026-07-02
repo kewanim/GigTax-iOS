@@ -10,6 +10,9 @@ import SwiftData
 
 @main
 struct GigTaxApp: App {
+    @State private var locationService = LocationService()
+    @Environment(\.scenePhase) private var scenePhase
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Shift.self,
@@ -30,10 +33,21 @@ struct GigTaxApp: App {
         }
     }()
 
+    init() {
+        // Must register before the app finishes launching, per BGTaskScheduler docs.
+        BackgroundTaskManager.register(locationService: locationService)
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(locationService)
         }
         .modelContainer(sharedModelContainer)
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .background {
+                BackgroundTaskManager.schedule()
+            }
+        }
     }
 }

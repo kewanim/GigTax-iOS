@@ -6,6 +6,11 @@
 	<array>
 		<string>location</string>
 		<string>remote-notification</string>
+		<string>processing</string>
+	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.kewani-is-th.GigTax.locationMaintenance</string>
 	</array>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>GigTax tracks your trips in the background to record all your miles — including deadhead miles Uber and Lyft don't count — so you get the maximum deduction.</string>
