@@ -14,6 +14,7 @@ final class Shift {
     var importSource: String  // "manual", "uber_csv", "lyft_csv", "doordash_csv"
     var taxYear: Int
     var linkedTripID: UUID?
+    var importedMiles: Double?  // delivery miles reported by the platform CSV, if present
 
     var platform: Platform {
         get { Platform(rawValue: platformRaw) ?? .other }
@@ -35,7 +36,8 @@ final class Shift {
         bonuses: Double = 0,
         hoursWorked: Double = 0,
         notes: String = "",
-        importSource: String = "manual"
+        importSource: String = "manual",
+        importedMiles: Double? = nil
     ) {
         self.id = UUID()
         self.date = date
@@ -47,5 +49,6 @@ final class Shift {
         self.notes = notes
         self.importSource = importSource
         self.taxYear = Calendar.current.component(.year, from: date)
+        self.importedMiles = importedMiles
     }
 }

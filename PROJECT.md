@@ -106,13 +106,13 @@ GigTax
 ## Sprint Roadmap (10 Weeks)
 
 ```
-Week 1  → S0: Project Setup         [NOT STARTED]
+Week 1  → S0: Project Setup         [DONE]
            Xcode, data models, navigation skeleton
 
-Week 2  → S1: Driver Profile        [NOT STARTED]
+Week 2  → S1: Driver Profile        [DONE]
            Onboarding, car picker, EPA MPG, EIA gas prices
 
-Week 3  → S2: GPS Trip Tracking     [NOT STARTED]
+Week 3  → S2: GPS Trip Tracking     [DONE]
            Auto start/stop, deadhead miles, fuel calc, battery optimization
 
 Week 4  → S3: Earnings Import       [NOT STARTED]
@@ -144,15 +144,16 @@ Change `[NOT STARTED]` → `[IN PROGRESS]` → `[DONE]`
 
 ## Current Status
 
-**Stage:** Planning
-**Last worked on:** Sprint plan and feature definition
-**Next step:** Finalize feature list, then start S0 (Xcode project setup)
+**Stage:** Building — S0, S1, S2 complete
+**Last worked on:** S2 GPS trip tracking (battery-optimized power mode, BGTaskScheduler background maintenance, trip-detection unit tests)
+**Next step:** S3 — Earnings Import (Uber/Lyft/DoorDash CSV parsers)
 
 **Open questions / decisions still to make:**
 - [ ] Free / paid / subscription pricing model
 - [ ] Uber Partner API application (do we apply now or after launch?)
 - [ ] App name — is "GigTax" final?
 - [ ] Color scheme / visual identity
+- [ ] App logo / icon design — pick this at the end of S9 (Polish & App Store), see GT-081
 - [ ] Do we want a companion web dashboard (like the existing PWA)?
 
 ---
