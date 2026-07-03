@@ -52,6 +52,22 @@ struct DashboardView: View {
         MileageComparisonCalculator.compare(trips: trips.filter { $0.taxYear == taxYear }, shifts: yearShifts)
     }
 
+    private var hourlyRate: HourlyRateCalculator.Result? {
+        HourlyRateCalculator.calculate(shifts: yearShifts, taxSummary: taxSummary)
+    }
+
+    private var platformRates: [PlatformProfitabilityCalculator.PlatformRate] {
+        PlatformProfitabilityCalculator.rank(shifts: yearShifts, effectiveTaxRate: taxSummary.effectiveRate)
+    }
+
+    private var savingsRecommendation: TaxSavingsJarCalculator.Recommendation? {
+        TaxSavingsJarCalculator.calculate(shifts: yearShifts, taxSummary: taxSummary, savingsPercent: driverProfile?.taxSavingsPercent ?? 25)
+    }
+
+    private var earningsInsights: EarningsPatternAnalyzer.Insights? {
+        EarningsPatternAnalyzer.analyze(shifts: yearShifts)
+    }
+
     var body: some View {
         NavigationStack {
             Group {
@@ -105,6 +121,34 @@ struct DashboardView: View {
                                 Text("Mileage: App vs. Platform")
                             } footer: {
                                 Text("Deadhead and positioning miles the platform doesn't report still count toward your deduction.")
+                            }
+                        }
+
+                        if let hourlyRate {
+                            Section("Net Hourly Rate") {
+                                HourlyRateRow(hourlyRate: hourlyRate)
+                            }
+                        }
+
+                        if platformRates.count > 1 {
+                            Section("Platform Profitability") {
+                                ForEach(platformRates) { rate in
+                                    PlatformRateRow(rate: rate)
+                                }
+                            }
+                        }
+
+                        if let savingsRecommendation {
+                            Section {
+                                TaxSavingsJarCard(recommendation: savingsRecommendation)
+                            } header: {
+                                Text("Tax Savings Jar")
+                            }
+                        }
+
+                        if let earningsInsights {
+                            Section("Your Earnings Patterns") {
+                                EarningsInsightsCard(insights: earningsInsights)
                             }
                         }
                     }
@@ -411,6 +455,76 @@ private struct MileageComparisonCard: View {
             }
         }
         .padding(.vertical, 4)
+    }
+}
+
+private struct HourlyRateRow: View {
+    let hourlyRate: HourlyRateCalculator.Result
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Gross/hr").font(.caption).foregroundStyle(.secondary)
+                Text(hourlyRate.grossPerHour, format: .currency(code: "USD")).font(.headline)
+            }
+            Spacer()
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("Net/hr").font(.caption).foregroundStyle(.secondary)
+                Text(hourlyRate.netPerHour, format: .currency(code: "USD")).font(.headline)
+            }
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+private struct PlatformRateRow: View {
+    let rate: PlatformProfitabilityCalculator.PlatformRate
+
+    var body: some View {
+        HStack {
+            Text(rate.platform.rawValue)
+            Spacer()
+            Text("\(rate.netPerHour.formatted(.currency(code: "USD")))/hr net")
+                .foregroundStyle(.secondary)
+        }
+    }
+}
+
+private struct TaxSavingsJarCard: View {
+    let recommendation: TaxSavingsJarCalculator.Recommendation
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Set aside \(recommendation.suggestedSetAside.formatted(.currency(code: "USD"))) (\(Int(recommendation.savingsPercent))%) from this week's \(recommendation.recentWeekGross.formatted(.currency(code: "USD"))) earnings.")
+                .font(.subheadline)
+
+            ProgressView(value: min(recommendation.onTrackProgress, 1.0)) {
+                Text("On track for this year's tax bill")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .tint(recommendation.onTrackProgress >= 1.0 ? .green : .orange)
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+private struct EarningsInsightsCard: View {
+    let insights: EarningsPatternAnalyzer.Insights
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "calendar").foregroundStyle(.secondary)
+                Text("Best day: **\(insights.bestDayOfWeek)** (avg \(insights.bestDayAverage.formatted(.currency(code: "USD"))))")
+            }
+            HStack {
+                Image(systemName: "trophy").foregroundStyle(.secondary)
+                Text("Best platform: **\(insights.bestPlatform.rawValue)** (\(insights.bestPlatformTotal.formatted(.currency(code: "USD"))) total)")
+            }
+        }
+        .font(.subheadline)
+        .padding(.vertical, 2)
     }
 }
 
