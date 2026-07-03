@@ -35,10 +35,12 @@ struct DashboardView: View {
     }
 
     private var yearPayments: [QuarterlyPayment] { payments.filter { $0.taxYear == taxYear } }
-    private var paidSoFar: Double { yearPayments.reduce(0) { $0 + $1.amount } }
 
-    private var remainingQuarters: [QuarterlyTaxCalculator.Quarter] {
-        QuarterlyTaxCalculator.remainingQuarters(totalTaxOwed: taxSummary.totalTax, paidSoFar: paidSoFar, forYear: taxYear)
+    private var quarterStatuses: [QuarterStatus] {
+        QuarterlyTaxCalculator.quarters(totalTaxOwed: taxSummary.totalTax, forYear: taxYear).map { quarter in
+            let paid = yearPayments.filter { $0.quarterNumber == quarter.number }.reduce(0) { $0 + $1.amount }
+            return QuarterStatus(quarter: quarter, paid: paid)
+        }
     }
 
     var body: some View {
@@ -79,19 +81,8 @@ struct DashboardView: View {
                             Text("Tap any line for an explanation.")
                         }
 
-                        if !remainingQuarters.isEmpty {
-                            Section("Upcoming Quarterly Payments") {
-                                ForEach(remainingQuarters, id: \.number) { quarter in
-                                    HStack {
-                                        Text("Q\(quarter.number)").fontWeight(.semibold)
-                                        Spacer()
-                                        VStack(alignment: .trailing, spacing: 2) {
-                                            Text(quarter.amountDue, format: .currency(code: "USD"))
-                                            Text(quarter.dueDate, style: .date).font(.caption2).foregroundStyle(.secondary)
-                                        }
-                                    }
-                                }
-                            }
+                        Section("Quarterly Payments") {
+                            QuarterlyPaymentGrid(quarterStatuses: quarterStatuses)
                         }
                     }
                 }
@@ -215,6 +206,71 @@ private struct RatePill: View {
             .padding(.vertical, 4)
             .background(Capsule().fill(Color.accentColor.opacity(0.15)))
             .foregroundStyle(Color.accentColor)
+    }
+}
+
+private struct QuarterStatus: Identifiable {
+    let quarter: QuarterlyTaxCalculator.Quarter
+    let paid: Double
+
+    var id: Int { quarter.number }
+    var isPaidInFull: Bool { paid >= quarter.amountDue - 0.5 }
+    var isPastDue: Bool { !isPaidInFull && quarter.dueDate < .now }
+}
+
+private struct QuarterlyPaymentGrid: View {
+    let quarterStatuses: [QuarterStatus]
+
+    private var nextUpcomingQuarterNumber: Int? {
+        quarterStatuses.first { !$0.isPaidInFull && $0.quarter.dueDate >= .now }?.quarter.number
+    }
+
+    private let columns = [GridItem(.flexible()), GridItem(.flexible())]
+
+    var body: some View {
+        LazyVGrid(columns: columns, spacing: 12) {
+            ForEach(quarterStatuses) { status in
+                QuarterCard(status: status, isNextUpcoming: status.quarter.number == nextUpcomingQuarterNumber)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+private struct QuarterCard: View {
+    let status: QuarterStatus
+    let isNextUpcoming: Bool
+
+    private var borderColor: Color {
+        if status.isPastDue { return .red }
+        if isNextUpcoming { return .accentColor }
+        return .clear
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text("Q\(status.quarter.number)").fontWeight(.bold)
+                Spacer()
+                if status.isPaidInFull {
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                } else if status.isPastDue {
+                    Text("PAST DUE").font(.caption2).fontWeight(.bold).foregroundStyle(.red)
+                } else if isNextUpcoming {
+                    Text("NEXT").font(.caption2).fontWeight(.bold).foregroundStyle(Color.accentColor)
+                }
+            }
+            Text(status.quarter.amountDue, format: .currency(code: "USD"))
+                .font(.headline)
+                .foregroundStyle(status.isPastDue ? .red : .primary)
+            Text(status.quarter.dueDate, style: .date)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemGroupedBackground)))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(borderColor, lineWidth: 2))
     }
 }
 
