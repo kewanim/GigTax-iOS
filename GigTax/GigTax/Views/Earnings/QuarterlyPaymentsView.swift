@@ -14,29 +14,8 @@ struct QuarterlyPaymentsView: View {
 
     private var driverProfile: DriverProfile? { driverProfiles.first }
 
-    private var grossIncome: Double {
-        shifts.filter { $0.taxYear == taxYear }.reduce(0) { $0 + $1.totalIncome }
-    }
-
-    private var deductions: DeductionMethodCalculator.Comparison {
-        DeductionMethodCalculator.compare(trips: trips, expenses: expenses, phoneBusinessPercent: driverProfile?.phoneBusinessPercent ?? 100)
-    }
-
     private var taxSummary: TaxSummary {
-        let filingStatus = driverProfile?.filingStatus ?? .single
-        let state = driverProfile?.state ?? "MD"
-        let county = driverProfile?.county ?? ""
-        let method = driverProfile?.preferredDeductionMethod ?? .standard
-        let businessDeductions = method == .standard ? deductions.standardMileageDeduction : deductions.actualExpenseDeduction
-
-        return TaxEngine.summary(
-            grossIncome: grossIncome,
-            businessDeductions: businessDeductions,
-            filingStatus: filingStatus,
-            stateTax: { taxableIncome in
-                StateTaxCalculator.totalStateAndLocalTax(onTaxableIncome: taxableIncome, state: state, county: county, filingStatus: filingStatus)
-            }
-        )
+        TaxYearSummaryBuilder.build(shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear)
     }
 
     private var yearPayments: [QuarterlyPayment] {
