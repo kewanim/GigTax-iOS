@@ -118,7 +118,7 @@ Week 3  → S2: GPS Trip Tracking     [DONE]
 Week 4  → S3: Earnings Import       [DONE]
            Uber/Lyft/DoorDash CSV parsers, manual entry, tips
 
-Week 5  → S4: Expense Tracking      [NOT STARTED]
+Week 5  → S4: Expense Tracking      [DONE]
            Fuel auto-log, receipts, recurring expenses
 
 Week 6  → S5: Tax Engine            [NOT STARTED]
@@ -144,9 +144,9 @@ Change `[NOT STARTED]` → `[IN PROGRESS]` → `[DONE]`
 
 ## Current Status
 
-**Stage:** Building — S0, S1, S2, S3 complete
-**Last worked on:** S3 Earnings Import (Uber/Lyft/DoorDash CSV parsers, import UI with drag-and-drop, duplicate detection, manual shift entry/editing, platform earnings chart)
-**Next step:** S4 — Expense Tracking (fuel auto-log, receipts, recurring expenses)
+**Stage:** Building — S0, S1, S2, S3, S4 complete
+**Last worked on:** S4 Expense Tracking (fuel auto-log from trips, manual entry + receipts via camera/photos/files, recurring expenses, category totals, phone business-% deduction)
+**Next step:** S5 — Tax Engine (standard vs. actual deduction methods, federal/state/SE tax, unit tests)
 
 **Open questions / decisions still to make:**
 - [ ] Free / paid / subscription pricing model
