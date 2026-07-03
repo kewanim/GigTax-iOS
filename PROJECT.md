@@ -124,7 +124,7 @@ Week 5  → S4: Expense Tracking      [DONE]
 Week 6  → S5: Tax Engine            [DONE]
            Both deduction methods, all 50 states, unit tests
 
-Week 7  → S6: Dashboard             [NOT STARTED]
+Week 7  → S6: Dashboard             [DONE]
            Live tax view, net hourly rate, platform comparison, charts
 
 Week 8  → S7: Optimizer & Audit     [NOT STARTED]
@@ -144,9 +144,9 @@ Change `[NOT STARTED]` → `[IN PROGRESS]` → `[DONE]`
 
 ## Current Status
 
-**Stage:** Building — S0 through S5 complete
-**Last worked on:** S5 Tax Engine — federal brackets (verified against Tax Foundation), all 50 states + DC + all 24 Maryland county rates (verified against state DOR/legislative sources, not just recalled), SE tax with the Social Security wage base cap, standard-vs-actual deduction comparison, quarterly estimator, and the quarterly payment tracker UI. Shipped across 4 PRs on separate branches (feature/core-tax-calculators, feature/tax-engine-core, feature/state-tax-tables, feature/quarterly-payment-tracker), each merged after a green test run.
-**Next step:** S6 — Dashboard (live tax view, net hourly rate, platform comparison, charts)
+**Stage:** Building — S0 through S6 complete
+**Last worked on:** S6 Dashboard — YTD gross/net/tax header with effective/marginal rate pills, a tappable tax waterfall, a 2x2 quarterly-payment grid (next due highlighted, past due in red), a live Standard-vs-Actual toggle, a tax-year selector, a 12-month earnings chart, a GPS-vs-platform-reported mileage comparison, net hourly rate, platform profitability ranking, a tax savings jar with an on-track progress bar, and earnings pattern insights (best day/platform, gated on 4+ weeks of data). Also extracted a shared `TaxYearSummaryBuilder` used by both the Dashboard and Quarterly Payments screen, fixing a latent bug where trips/expenses weren't filtered to the selected tax year. Shipped across 4 PRs on separate branches, each merged after a green test run.
+**Next step:** S7 — Optimizer & Audit (Deduction Optimizer, Audit Shield, mileage log PDF, Schedule C)
 
 **Open questions / decisions still to make:**
 - [ ] Free / paid / subscription pricing model
