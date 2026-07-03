@@ -29,11 +29,12 @@ enum FilingStatus: String, CaseIterable, Codable {
     case marriedFilingJointly = "Married Filing Jointly"
     case headOfHousehold      = "Head of Household"
 
+    // 2025 IRS figures, verified against Tax Foundation / IRS inflation adjustments.
     var standardDeduction: Double {
         switch self {
-        case .single:               return 15_000
-        case .marriedFilingJointly: return 30_000
-        case .headOfHousehold:      return 22_500
+        case .single:               return 15_750
+        case .marriedFilingJointly: return 31_500
+        case .headOfHousehold:      return 23_625
         }
     }
 }
