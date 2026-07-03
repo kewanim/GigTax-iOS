@@ -18,5 +18,7 @@
 	<string>GigTax uses your location to track trips and calculate accurate mileage deductions.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>GigTax tracks your trips in the background to record all your miles — including deadhead miles Uber and Lyft don't count — so you get the maximum deduction.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>GigTax uses your camera to photograph receipts for expense tracking.</string>
 </dict>
 </plist>

@@ -4,6 +4,7 @@ import SwiftData
 struct ManualTripEntryView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(LocationService.self) private var locationService
 
     @State private var date = Date()
     @State private var distanceText = ""
@@ -70,21 +71,29 @@ struct ManualTripEntryView: View {
     private func save() {
         let cityMiles = distance * (cityPct / 100)
         let hwyMiles  = distance * (1 - cityPct / 100)
+        let gallons = (locationService.cityMPG > 0 ? cityMiles / locationService.cityMPG : 0)
+                    + (locationService.highwayMPG > 0 ? hwyMiles / locationService.highwayMPG : 0)
 
         let trip = Trip(startDate: date, isManualEntry: true)
-        trip.endDate        = date
-        trip.distanceMiles  = distance
-        trip.cityMiles      = cityMiles
-        trip.highwayMiles   = hwyMiles
-        trip.tripTypeRaw    = tripType.rawValue
-        trip.businessPurpose = purpose
+        trip.endDate              = date
+        trip.distanceMiles        = distance
+        trip.cityMiles            = cityMiles
+        trip.highwayMiles         = hwyMiles
+        trip.tripTypeRaw          = tripType.rawValue
+        trip.businessPurpose      = purpose
+        trip.estimatedFuelGallons = gallons
+        trip.estimatedFuelCost    = gallons * locationService.gasPrice
 
         modelContext.insert(trip)
+        if tripType == .business, let fuelExpense = Expense.fuelExpense(for: trip) {
+            modelContext.insert(fuelExpense)
+        }
         dismiss()
     }
 }
 
 #Preview {
     ManualTripEntryView()
+        .environment(LocationService())
         .modelContainer(for: Trip.self, inMemory: true)
 }

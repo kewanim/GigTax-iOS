@@ -179,6 +179,9 @@ final class LocationService: NSObject {
         trip.tripTypeRaw          = TripType.business.rawValue
 
         modelContext?.insert(trip)
+        if let fuelExpense = Expense.fuelExpense(for: trip) {
+            modelContext?.insert(fuelExpense)
+        }
         try? modelContext?.save()
 
         resetState()
