@@ -145,7 +145,7 @@ Change `[NOT STARTED]` → `[IN PROGRESS]` → `[DONE]`
 ## Current Status
 
 **Stage:** Building — S0, S1, S2, S3, S4 complete
-**Last worked on:** S4 Expense Tracking (fuel auto-log from trips, manual entry + receipts via camera/photos/files, recurring expenses, category totals, phone business-% deduction)
+**Last worked on:** S4 Expense Tracking, plus an added vehicle maintenance feature (mileage-based service schedule with due + follow-up notifications, odometer reconciliation with weekly check-in, and loan interest calculator for financed vehicles — GT-098 through GT-101 on the board)
 **Next step:** S5 — Tax Engine (standard vs. actual deduction methods, federal/state/SE tax, unit tests)
 
 **Open questions / decisions still to make:**
