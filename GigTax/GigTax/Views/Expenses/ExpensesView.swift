@@ -36,6 +36,22 @@ struct ExpensesView: View {
     var body: some View {
         NavigationStack {
             List {
+                // Always reachable, regardless of whether any expenses exist yet —
+                // a fresh install with zero expenses still needs a way in to set up
+                // the vehicle and recurring costs.
+                Section {
+                    NavigationLink {
+                        RecurringExpensesView()
+                    } label: {
+                        Label("Recurring Expenses", systemImage: "arrow.clockwise")
+                    }
+                    NavigationLink {
+                        VehicleDetailsView()
+                    } label: {
+                        Label("Vehicle Details", systemImage: "car.fill")
+                    }
+                }
+
                 if expenses.isEmpty {
                     ContentUnavailableView(
                         "No expenses yet",
@@ -52,19 +68,6 @@ struct ExpensesView: View {
                                 Text(entry.total, format: .currency(code: "USD"))
                                     .foregroundStyle(.secondary)
                             }
-                        }
-                    }
-
-                    Section {
-                        NavigationLink {
-                            RecurringExpensesView()
-                        } label: {
-                            Label("Recurring Expenses", systemImage: "arrow.clockwise")
-                        }
-                        NavigationLink {
-                            VehicleDetailsView()
-                        } label: {
-                            Label("Vehicle Details", systemImage: "car.fill")
                         }
                     }
 
