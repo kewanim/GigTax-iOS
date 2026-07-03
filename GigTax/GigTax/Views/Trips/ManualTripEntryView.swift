@@ -88,6 +88,14 @@ struct ManualTripEntryView: View {
         if tripType == .business, let fuelExpense = Expense.fuelExpense(for: trip) {
             modelContext.insert(fuelExpense)
         }
+
+        // Required hook: manual entries never touch LocationService.endTrip,
+        // so without this call a driver who logs trips by hand (exactly the
+        // case GPS-gap-filling exists for) would never trigger a maintenance check.
+        if let vehicle = locationService.vehicle {
+            MaintenanceScheduler.evaluate(vehicle: vehicle, modelContext: modelContext)
+        }
+
         dismiss()
     }
 }

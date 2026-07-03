@@ -11,6 +11,7 @@ final class Expense {
     var isRecurring: Bool
     var receiptImagePath: String?      // relative path in app sandbox
     var linkedTripID: UUID?            // auto-linked when generated from a trip
+    var linkedMaintenanceItemID: UUID? // auto-linked when generated from a logged maintenance service
     var taxYear: Int
 
     var category: ExpenseCategory {
@@ -54,6 +55,19 @@ final class Expense {
             notes: String(format: "%.2f gal @ $%.2f/gal for %.1f mi trip", gallons, perGallon, trip.distanceMiles)
         )
         expense.linkedTripID = trip.id
+        return expense
+    }
+
+    /// Creates the linked expense when a driver confirms they got a scheduled
+    /// maintenance service done and reports what it actually cost.
+    static func maintenanceExpense(for item: MaintenanceScheduleItem, actualCost: Double) -> Expense {
+        let expense = Expense(
+            date: .now,
+            category: .maintenance,
+            amount: actualCost,
+            notes: "\(item.type.rawValue) at \(Int(item.lastServiceMileage)) mi"
+        )
+        expense.linkedMaintenanceItemID = item.id
         return expense
     }
 }

@@ -70,3 +70,58 @@ enum ExpenseCategory: String, CaseIterable, Codable {
         }
     }
 }
+
+enum VehicleOwnership: String, CaseIterable, Codable {
+    case owned    = "Own Outright"
+    case financing = "Financing"
+    case leasing  = "Leasing"
+}
+
+enum MaintenanceType: String, CaseIterable, Codable {
+    case oilChange         = "Oil Change"
+    case tireRotation       = "Tire Rotation"
+    case tireReplacement    = "Tire Replacement"
+    case brakePads          = "Brake Pads"
+    case transmissionFluid  = "Transmission Fluid"
+    case airFilter          = "Air Filter"
+    case other              = "Other"
+
+    var icon: String {
+        switch self {
+        case .oilChange:        return "drop.fill"
+        case .tireRotation:     return "circle.dashed"
+        case .tireReplacement:  return "circle.fill"
+        case .brakePads:        return "octagon.fill"
+        case .transmissionFluid: return "gearshape.fill"
+        case .airFilter:        return "wind"
+        case .other:             return "wrench.and.screwdriver.fill"
+        }
+    }
+
+    // Rough US ballpark defaults — the driver edits these to match their own
+    // car's owner's manual and their own market; there's no free API for
+    // real manufacturer schedules or live regional service pricing.
+    var defaultIntervalMiles: Double {
+        switch self {
+        case .oilChange:         return 5_000
+        case .tireRotation:      return 6_000
+        case .tireReplacement:   return 50_000
+        case .brakePads:         return 45_000
+        case .transmissionFluid: return 40_000
+        case .airFilter:         return 15_000
+        case .other:             return 10_000
+        }
+    }
+
+    var defaultEstimatedCost: Double {
+        switch self {
+        case .oilChange:         return 60
+        case .tireRotation:      return 30
+        case .tireReplacement:   return 700
+        case .brakePads:         return 220
+        case .transmissionFluid: return 150
+        case .airFilter:         return 30
+        case .other:             return 100
+        }
+    }
+}

@@ -17,6 +17,7 @@ final class LocationService: NSObject {
     var highwayMPG: Double = 36
     var gasPrice: Double = 3.45
     var modelContext: ModelContext?
+    var vehicle: Vehicle?
 
     // MARK: - Private
     private let manager = CLLocationManager()
@@ -66,6 +67,10 @@ final class LocationService: NSObject {
         if isTracking, let last = lastLoc,
            Date().timeIntervalSince(last.timestamp) > staleTrackingInterval {
             endTrip(at: last)
+        }
+
+        if let vehicle, let modelContext {
+            MaintenanceScheduler.evaluate(vehicle: vehicle, modelContext: modelContext)
         }
     }
 
@@ -183,6 +188,10 @@ final class LocationService: NSObject {
             modelContext?.insert(fuelExpense)
         }
         try? modelContext?.save()
+
+        if let vehicle, let modelContext {
+            MaintenanceScheduler.evaluate(vehicle: vehicle, modelContext: modelContext)
+        }
 
         resetState()
         enterLowPowerMode()

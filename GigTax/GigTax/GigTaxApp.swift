@@ -19,6 +19,7 @@ struct GigTaxApp: App {
             Trip.self,
             Expense.self,
             RecurringExpense.self,
+            MaintenanceScheduleItem.self,
             DriverProfile.self,
             Vehicle.self,
         ])

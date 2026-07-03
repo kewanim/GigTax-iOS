@@ -3,6 +3,7 @@ import SwiftData
 
 @Model
 final class Vehicle {
+    var id: UUID
     var make: String
     var model: String
     var year: Int
@@ -14,6 +15,26 @@ final class Vehicle {
     var startingOdometer: Double
     var purchasePrice: Double?
     var placedInServiceDate: Date?     // for Section 179 / MACRS depreciation
+
+    // Ownership & loan — kept separate from placedInServiceDate above, since
+    // loan origination and "started using this car for rideshare" are legally
+    // and practically different dates (IRS Pub 463).
+    var ownershipRaw: String
+    var loanTermMonths: Int?
+    var loanAPR: Double?
+    var loanStartDate: Date?
+
+    // Odometer reconciliation — GPS-accumulated trip miles drift from the true
+    // odometer over time (trips outside tracking, phone left home, etc.), so
+    // maintenance scheduling anchors on the last driver-confirmed reading plus
+    // trip miles logged since. See OdometerReconciliation.swift.
+    var lastConfirmedOdometer: Double
+    var lastConfirmedOdometerDate: Date
+
+    var ownership: VehicleOwnership {
+        get { VehicleOwnership(rawValue: ownershipRaw) ?? .owned }
+        set { ownershipRaw = newValue.rawValue }
+    }
 
     // EPA-weighted combined MPG (55% city / 45% highway)
     var combinedMPG: Double {
@@ -41,6 +62,7 @@ final class Vehicle {
         tankSizeGallons: Double = 0,
         startingOdometer: Double = 0
     ) {
+        self.id = UUID()
         self.make = make
         self.model = model
         self.year = year
@@ -50,5 +72,8 @@ final class Vehicle {
         self.highwayMPG = highwayMPG
         self.tankSizeGallons = tankSizeGallons
         self.startingOdometer = startingOdometer
+        self.ownershipRaw = VehicleOwnership.owned.rawValue
+        self.lastConfirmedOdometer = startingOdometer
+        self.lastConfirmedOdometerDate = .now
     }
 }

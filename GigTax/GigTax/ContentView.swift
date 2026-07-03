@@ -27,6 +27,7 @@ struct ContentView: View {
                 if let v = vehicles.first {
                     locationService.cityMPG    = v.cityMPG
                     locationService.highwayMPG = v.highwayMPG
+                    locationService.vehicle    = v
                 }
                 locationService.startMonitoring()
             }

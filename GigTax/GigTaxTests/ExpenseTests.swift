@@ -67,4 +67,14 @@ struct ExpenseTests {
         let recurring = RecurringExpense(category: .insurance, amount: 1200, frequency: .yearly, startDate: .now)
         #expect(recurring.annualEquivalent == 1200)
     }
+
+    @Test func maintenanceExpenseIsLinkedAndDescribesMileage() {
+        let item = MaintenanceScheduleItem(type: .oilChange, intervalMiles: 5_000, lastServiceMileage: 45_020)
+        let expense = Expense.maintenanceExpense(for: item, actualCost: 72.50)
+        #expect(expense.category == .maintenance)
+        #expect(expense.amount == 72.50)
+        #expect(expense.linkedMaintenanceItemID == item.id)
+        #expect(expense.notes.contains("Oil Change"))
+        #expect(expense.notes.contains("45020"))
+    }
 }

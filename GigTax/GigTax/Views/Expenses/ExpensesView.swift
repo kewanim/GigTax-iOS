@@ -61,6 +61,11 @@ struct ExpensesView: View {
                         } label: {
                             Label("Recurring Expenses", systemImage: "arrow.clockwise")
                         }
+                        NavigationLink {
+                            VehicleDetailsView()
+                        } label: {
+                            Label("Vehicle Details", systemImage: "car.fill")
+                        }
                     }
 
                     Section {
