@@ -42,6 +42,16 @@ struct EarningsView: View {
     var body: some View {
         NavigationStack {
             List {
+                // Always reachable, regardless of whether any shifts exist yet —
+                // matches the same fix applied to ExpensesView's Vehicle Details link.
+                Section {
+                    NavigationLink {
+                        QuarterlyPaymentsView()
+                    } label: {
+                        Label("Quarterly Taxes", systemImage: "calendar.badge.clock")
+                    }
+                }
+
                 if shifts.isEmpty {
                     ContentUnavailableView(
                         "No earnings yet",
