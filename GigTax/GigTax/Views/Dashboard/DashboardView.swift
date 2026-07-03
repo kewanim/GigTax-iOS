@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Charts
 
 struct DashboardView: View {
     @Query private var shifts: [Shift]
@@ -43,6 +44,14 @@ struct DashboardView: View {
         }
     }
 
+    private var monthlyTotals: [MonthlyEarningsCalculator.MonthlyPlatformTotal] {
+        MonthlyEarningsCalculator.monthlyTotals(shifts: shifts, taxYear: taxYear)
+    }
+
+    private var mileageComparison: MileageComparisonCalculator.Comparison {
+        MileageComparisonCalculator.compare(trips: trips.filter { $0.taxYear == taxYear }, shifts: yearShifts)
+    }
+
     var body: some View {
         NavigationStack {
             Group {
@@ -83,6 +92,20 @@ struct DashboardView: View {
 
                         Section("Quarterly Payments") {
                             QuarterlyPaymentGrid(quarterStatuses: quarterStatuses)
+                        }
+
+                        Section("Monthly Earnings") {
+                            MonthlyEarningsChart(totals: monthlyTotals)
+                        }
+
+                        if mileageComparison.gpsMiles > 0 || mileageComparison.reportedMiles > 0 {
+                            Section {
+                                MileageComparisonCard(comparison: mileageComparison)
+                            } header: {
+                                Text("Mileage: App vs. Platform")
+                            } footer: {
+                                Text("Deadhead and positioning miles the platform doesn't report still count toward your deduction.")
+                            }
                         }
                     }
                 }
@@ -315,6 +338,76 @@ private struct DeductionMethodToggleCard: View {
                 Text("\(comparison.recommended == .standard ? "Standard Mileage" : "Actual Expense") saves you \(savings.formatted(.currency(code: "USD"))) this year.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+private struct MonthlyEarningsChart: View {
+    let totals: [MonthlyEarningsCalculator.MonthlyPlatformTotal]
+
+    private var isSinglePlatform: Bool {
+        MonthlyEarningsCalculator.distinctPlatforms(in: totals).count <= 1
+    }
+
+    private func monthLabel(_ month: Int) -> String {
+        MonthlyEarningsCalculator.monthSymbols[month - 1]
+    }
+
+    var body: some View {
+        if totals.isEmpty {
+            Text("No earnings logged this year yet.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        } else {
+            Chart(totals) { entry in
+                if isSinglePlatform {
+                    BarMark(
+                        x: .value("Month", monthLabel(entry.month)),
+                        y: .value("Earnings", entry.total)
+                    )
+                    .foregroundStyle(Color.accentColor)
+                } else {
+                    BarMark(
+                        x: .value("Month", monthLabel(entry.month)),
+                        y: .value("Earnings", entry.total)
+                    )
+                    .foregroundStyle(by: .value("Platform", entry.platform.rawValue))
+                }
+            }
+            .frame(height: 220)
+            .padding(.vertical, 4)
+        }
+    }
+}
+
+private struct MileageComparisonCard: View {
+    let comparison: MileageComparisonCalculator.Comparison
+
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("App (GPS)").font(.caption).foregroundStyle(.secondary)
+                    Text("\(Int(comparison.gpsMiles)) mi").font(.headline)
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("Platform Reported").font(.caption).foregroundStyle(.secondary)
+                    Text("\(Int(comparison.reportedMiles)) mi").font(.headline)
+                }
+            }
+            if comparison.extraMiles > 0 {
+                Divider()
+                HStack {
+                    Text("Extra miles caught")
+                    Spacer()
+                    Text("+\(Int(comparison.extraMiles)) mi (\(comparison.extraDollarsRecovered.formatted(.currency(code: "USD"))))")
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.green)
+                }
+                .font(.subheadline)
             }
         }
         .padding(.vertical, 4)
