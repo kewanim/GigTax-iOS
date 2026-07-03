@@ -121,7 +121,7 @@ Week 4  → S3: Earnings Import       [DONE]
 Week 5  → S4: Expense Tracking      [DONE]
            Fuel auto-log, receipts, recurring expenses
 
-Week 6  → S5: Tax Engine            [NOT STARTED]
+Week 6  → S5: Tax Engine            [DONE]
            Both deduction methods, all 50 states, unit tests
 
 Week 7  → S6: Dashboard             [NOT STARTED]
@@ -144,9 +144,9 @@ Change `[NOT STARTED]` → `[IN PROGRESS]` → `[DONE]`
 
 ## Current Status
 
-**Stage:** Building — S0, S1, S2, S3, S4 complete
-**Last worked on:** S4 Expense Tracking, plus an added vehicle maintenance feature (mileage-based service schedule with due + follow-up notifications, odometer reconciliation with weekly check-in, and loan interest calculator for financed vehicles — GT-098 through GT-101 on the board)
-**Next step:** S5 — Tax Engine (standard vs. actual deduction methods, federal/state/SE tax, unit tests)
+**Stage:** Building — S0 through S5 complete
+**Last worked on:** S5 Tax Engine — federal brackets (verified against Tax Foundation), all 50 states + DC + all 24 Maryland county rates (verified against state DOR/legislative sources, not just recalled), SE tax with the Social Security wage base cap, standard-vs-actual deduction comparison, quarterly estimator, and the quarterly payment tracker UI. Shipped across 4 PRs on separate branches (feature/core-tax-calculators, feature/tax-engine-core, feature/state-tax-tables, feature/quarterly-payment-tracker), each merged after a green test run.
+**Next step:** S6 — Dashboard (live tax view, net hourly rate, platform comparison, charts)
 
 **Open questions / decisions still to make:**
 - [ ] Free / paid / subscription pricing model
