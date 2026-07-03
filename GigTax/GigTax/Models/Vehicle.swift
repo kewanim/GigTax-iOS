@@ -3,7 +3,12 @@ import SwiftData
 
 @Model
 final class Vehicle {
-    var id: UUID
+    // Inline default values (not just init defaults) so SwiftData's automatic
+    // lightweight migration can backfill these for vehicles that existed
+    // before these fields were added — without a declaration-level default,
+    // migration fails with "missing attribute values on mandatory destination
+    // attribute" for anyone with existing data.
+    var id: UUID = UUID()
     var make: String
     var model: String
     var year: Int
@@ -19,7 +24,7 @@ final class Vehicle {
     // Ownership & loan — kept separate from placedInServiceDate above, since
     // loan origination and "started using this car for rideshare" are legally
     // and practically different dates (IRS Pub 463).
-    var ownershipRaw: String
+    var ownershipRaw: String = VehicleOwnership.owned.rawValue
     var loanTermMonths: Int?
     var loanAPR: Double?
     var loanStartDate: Date?
@@ -28,8 +33,8 @@ final class Vehicle {
     // odometer over time (trips outside tracking, phone left home, etc.), so
     // maintenance scheduling anchors on the last driver-confirmed reading plus
     // trip miles logged since. See OdometerReconciliation.swift.
-    var lastConfirmedOdometer: Double
-    var lastConfirmedOdometerDate: Date
+    var lastConfirmedOdometer: Double = 0
+    var lastConfirmedOdometerDate: Date = Date.now
 
     var ownership: VehicleOwnership {
         get { VehicleOwnership(rawValue: ownershipRaw) ?? .owned }
