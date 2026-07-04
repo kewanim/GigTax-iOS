@@ -7,13 +7,31 @@ import Foundation
 /// Payments) so this logic — and any future correction to it — only lives
 /// in one place.
 enum TaxYearSummaryBuilder {
+    /// This tax year's Section 179/bonus depreciation for the vehicle, if
+    /// purchase price and placed-in-service date are on file — computed
+    /// against the driver's actual logged business-use percentage, not a
+    /// user-entered guess. Exposed (not private) so views that build a
+    /// DeductionMethodCalculator.Comparison directly, without going through
+    /// build()/compareBothMethods(), can still include depreciation.
+    static func depreciationDeduction(vehicle: Vehicle?, businessUsePercent: Double, taxYear: Int) -> Double {
+        guard let vehicle, let purchasePrice = vehicle.purchasePrice, let placedInServiceDate = vehicle.placedInServiceDate else { return 0 }
+        let placedInServiceYear = Calendar.current.component(.year, from: placedInServiceDate)
+        let scheduleYear = VehicleDepreciationCalculator.scheduleYear(placedInServiceYear: placedInServiceYear, taxYear: taxYear)
+        guard scheduleYear >= 1 else { return 0 }
+        let result = VehicleDepreciationCalculator.calculate(
+            vehicleCost: purchasePrice, businessUsePercent: businessUsePercent, useBonusDepreciation: vehicle.useBonusDepreciation
+        )
+        return result.deduction(forYear: scheduleYear)
+    }
+
     static func build(
         shifts: [Shift],
         trips: [Trip],
         expenses: [Expense],
         driverProfile: DriverProfile?,
         taxYear: Int,
-        methodOverride: DeductionMethod? = nil
+        methodOverride: DeductionMethod? = nil,
+        vehicle: Vehicle? = nil
     ) -> TaxSummary {
         let yearShifts = shifts.filter { $0.taxYear == taxYear }
         let yearTrips = trips.filter { $0.taxYear == taxYear }
@@ -21,7 +39,9 @@ enum TaxYearSummaryBuilder {
 
         let grossIncome = yearShifts.reduce(0) { $0 + $1.totalIncome }
         let phoneBusinessPercent = driverProfile?.phoneBusinessPercent ?? 100
-        let deductions = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent)
+        let preliminaryDeductions = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent)
+        let depreciation = depreciationDeduction(vehicle: vehicle, businessUsePercent: preliminaryDeductions.businessUsePercent, taxYear: taxYear)
+        let deductions = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent, depreciationDeduction: depreciation)
 
         let filingStatus = driverProfile?.filingStatus ?? .single
         let state = driverProfile?.state ?? "MD"
@@ -46,7 +66,8 @@ enum TaxYearSummaryBuilder {
         trips: [Trip],
         expenses: [Expense],
         driverProfile: DriverProfile?,
-        taxYear: Int
+        taxYear: Int,
+        vehicle: Vehicle? = nil
     ) -> (standard: TaxSummary, actual: TaxSummary, recommended: DeductionMethod) {
         let yearShifts = shifts.filter { $0.taxYear == taxYear }
         let yearTrips = trips.filter { $0.taxYear == taxYear }
@@ -54,7 +75,9 @@ enum TaxYearSummaryBuilder {
 
         let grossIncome = yearShifts.reduce(0) { $0 + $1.totalIncome }
         let phoneBusinessPercent = driverProfile?.phoneBusinessPercent ?? 100
-        let deductions = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent)
+        let preliminaryDeductions = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent)
+        let depreciation = depreciationDeduction(vehicle: vehicle, businessUsePercent: preliminaryDeductions.businessUsePercent, taxYear: taxYear)
+        let deductions = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent, depreciationDeduction: depreciation)
 
         let filingStatus = driverProfile?.filingStatus ?? .single
         let state = driverProfile?.state ?? "MD"

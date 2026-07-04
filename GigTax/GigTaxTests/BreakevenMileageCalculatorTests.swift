@@ -11,6 +11,7 @@ struct BreakevenMileageCalculatorTests {
             businessUsePercent: 100,
             nonVehicleExpenses: 0,
             vehicleExpenses: 3_500,
+            depreciationDeduction: 0,
             standardMileageDeduction: 3_500,
             actualExpenseDeduction: 3_500
         )
@@ -27,6 +28,7 @@ struct BreakevenMileageCalculatorTests {
             businessUsePercent: 100,
             nonVehicleExpenses: 0,
             vehicleExpenses: 3_500, // breakeven at 5,000 miles
+            depreciationDeduction: 0,
             standardMileageDeduction: 7_000,
             actualExpenseDeduction: 3_500
         )
@@ -41,6 +43,7 @@ struct BreakevenMileageCalculatorTests {
             businessUsePercent: 100,
             nonVehicleExpenses: 0,
             vehicleExpenses: 3_500, // breakeven at 5,000 miles
+            depreciationDeduction: 0,
             standardMileageDeduction: 700,
             actualExpenseDeduction: 3_500
         )
@@ -55,6 +58,7 @@ struct BreakevenMileageCalculatorTests {
             businessUsePercent: 100,
             nonVehicleExpenses: 500,
             vehicleExpenses: 0,
+            depreciationDeduction: 0,
             standardMileageDeduction: 1_200,
             actualExpenseDeduction: 500
         )
@@ -68,6 +72,7 @@ struct BreakevenMileageCalculatorTests {
             businessUsePercent: 0,
             nonVehicleExpenses: 0,
             vehicleExpenses: 3_500,
+            depreciationDeduction: 0,
             standardMileageDeduction: 0,
             actualExpenseDeduction: 0
         )

@@ -20,6 +20,7 @@ final class Vehicle {
     var startingOdometer: Double
     var purchasePrice: Double?
     var placedInServiceDate: Date?     // for Section 179 / MACRS depreciation
+    var useBonusDepreciation: Bool = true  // affects both the bonus % and the §280F Year 1 luxury-auto cap
 
     // Ownership & loan — kept separate from placedInServiceDate above, since
     // loan origination and "started using this car for rideshare" are legally

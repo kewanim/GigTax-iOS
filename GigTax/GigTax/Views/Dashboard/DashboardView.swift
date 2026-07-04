@@ -25,7 +25,7 @@ struct DashboardView: View {
     private var yearShifts: [Shift] { shifts.filter { $0.taxYear == taxYear } }
 
     private var comparison: (standard: TaxSummary, actual: TaxSummary, recommended: DeductionMethod) {
-        TaxYearSummaryBuilder.compareBothMethods(shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear)
+        TaxYearSummaryBuilder.compareBothMethods(shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, vehicle: vehicles.first)
     }
 
     private var selectedMethod: DeductionMethod {
@@ -110,6 +110,9 @@ struct DashboardView: View {
                             }
                             NavigationLink("What If I Drove More?") {
                                 WhatIfSimulatorView(taxYear: taxYear)
+                            }
+                            NavigationLink("Vehicle Depreciation") {
+                                VehicleDepreciationView(taxYear: taxYear)
                             }
                         }
 

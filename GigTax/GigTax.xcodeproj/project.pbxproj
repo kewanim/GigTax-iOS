@@ -21,6 +21,7 @@
 		88408397CD094AACE5E6D96C /* GigTaxWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BC5AC9CF4BDDDE425CF651 /* GigTaxWidgetBundle.swift */; };
 		8B190BF2ECB1552C40B653BA /* TripActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEC1F283F641C9D7D03D01F2 /* TripActivityAttributes.swift */; };
 		8FFF5A0E15607482740008CE /* Shift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6AC317B3A9FC426960833D /* Shift.swift */; };
+		9CE7E31D9572A0C58A27A847 /* VehicleDepreciationCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B7FBE01D053260E92875AA4 /* VehicleDepreciationCalculator.swift */; };
 		A0D13DB3808E8FD4A0B6EFE8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B36F8E388552C610B56A2509 /* Foundation.framework */; };
 		A20069C9A96A231CF15258AC /* DriverProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05626D91B3C3EBF21E6111C6 /* DriverProfile.swift */; };
 		B3A189580D4A7894C5352ABC /* Vehicle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5473C127A80B6B3B8860221 /* Vehicle.swift */; };
@@ -80,6 +81,7 @@
 		120B04852FF4EBC400C0C833 /* GigTaxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GigTaxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		120B048F2FF4EBC400C0C833 /* GigTaxUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GigTaxUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		20BEC637E2DED94F887C318D /* TripLiveActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TripLiveActivity.swift; sourceTree = "<group>"; };
+		2B7FBE01D053260E92875AA4 /* VehicleDepreciationCalculator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = VehicleDepreciationCalculator.swift; path = ../GigTax/Models/VehicleDepreciationCalculator.swift; sourceTree = "<group>"; };
 		2F6AC317B3A9FC426960833D /* Shift.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Shift.swift; path = ../GigTax/Models/Shift.swift; sourceTree = "<group>"; };
 		3AF4BEC6F06ECA4823EA41B2 /* QuarterlyPayment.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = QuarterlyPayment.swift; path = ../GigTax/Models/QuarterlyPayment.swift; sourceTree = "<group>"; };
 		3E6C34298E7216E00D260E3C /* MarylandCountyTax.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MarylandCountyTax.swift; path = ../GigTax/Models/MarylandCountyTax.swift; sourceTree = "<group>"; };
@@ -240,6 +242,7 @@
 				3E6C34298E7216E00D260E3C /* MarylandCountyTax.swift */,
 				E341024C5CA103C2A93B321D /* DeductionMethodCalculator.swift */,
 				BEC1F283F641C9D7D03D01F2 /* TripActivityAttributes.swift */,
+				2B7FBE01D053260E92875AA4 /* VehicleDepreciationCalculator.swift */,
 			);
 			name = SharedModels;
 			sourceTree = "<group>";
@@ -453,6 +456,7 @@
 				144CA9741B5C57AB905AAAC9 /* TaxOwedWidget.swift in Sources */,
 				8B190BF2ECB1552C40B653BA /* TripActivityAttributes.swift in Sources */,
 				5AB7C91055DFBC5D7C173554 /* TripLiveActivity.swift in Sources */,
+				9CE7E31D9572A0C58A27A847 /* VehicleDepreciationCalculator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

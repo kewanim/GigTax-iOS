@@ -14,6 +14,7 @@ enum DeductionMethodCalculator {
         let businessUsePercent: Double  // 0-100
         let nonVehicleExpenses: Double  // phone (business %), accessories, other — deductible either way
         let vehicleExpenses: Double     // fuel, car wash, maintenance, insurance — actual-method only
+        let depreciationDeduction: Double  // Section 179/bonus depreciation for the tax year — actual-method only
         let standardMileageDeduction: Double
         let actualExpenseDeduction: Double
 
@@ -24,7 +25,12 @@ enum DeductionMethodCalculator {
 
     private static let vehicleCostCategories: Set<ExpenseCategory> = [.fuel, .carWash, .maintenance, .insurance]
 
-    static func compare(trips: [Trip], expenses: [Expense], phoneBusinessPercent: Double) -> Comparison {
+    /// - Parameter depreciationDeduction: this tax year's Section 179/bonus
+    ///   depreciation for the vehicle (see VehicleDepreciationCalculator),
+    ///   if any. Only affects the actual-expense total — depreciation is
+    ///   already baked into the standard mileage rate, same as fuel and
+    ///   maintenance.
+    static func compare(trips: [Trip], expenses: [Expense], phoneBusinessPercent: Double, depreciationDeduction: Double = 0) -> Comparison {
         let completedTrips = trips.filter { $0.isComplete }
         let businessMiles = completedTrips.filter { $0.tripType == .business }.reduce(0) { $0 + $1.distanceMiles }
         let totalMiles = completedTrips.reduce(0) { $0 + $1.distanceMiles }
@@ -41,7 +47,7 @@ enum DeductionMethodCalculator {
             }
 
         let standard = businessMiles * 0.70 + nonVehicleExpenses
-        let actual = vehicleExpenses * (businessUsePercent / 100) + nonVehicleExpenses
+        let actual = vehicleExpenses * (businessUsePercent / 100) + nonVehicleExpenses + depreciationDeduction
 
         return Comparison(
             businessMiles: businessMiles,
@@ -49,6 +55,7 @@ enum DeductionMethodCalculator {
             businessUsePercent: businessUsePercent,
             nonVehicleExpenses: nonVehicleExpenses,
             vehicleExpenses: vehicleExpenses,
+            depreciationDeduction: depreciationDeduction,
             standardMileageDeduction: standard,
             actualExpenseDeduction: actual
         )

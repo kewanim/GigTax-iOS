@@ -7,11 +7,16 @@ struct DeductionOptimizerView: View {
     @Query private var trips: [Trip]
     @Query private var expenses: [Expense]
     @Query private var driverProfiles: [DriverProfile]
+    @Query private var vehicles: [Vehicle]
 
     let taxYear: Int
 
     private var driverProfile: DriverProfile? { driverProfiles.first }
 
+    /// Deliberately excludes depreciation — this feeds the breakeven-mileage
+    /// chart, which is specifically about vehicle *operating* costs
+    /// (fuel/maintenance/insurance) vs. the standard rate, not the full
+    /// actual-expense total.
     private var comparison: DeductionMethodCalculator.Comparison {
         DeductionMethodCalculator.compare(
             trips: trips.filter { $0.taxYear == taxYear },
@@ -21,7 +26,7 @@ struct DeductionOptimizerView: View {
     }
 
     private var taxComparison: (standard: TaxSummary, actual: TaxSummary, recommended: DeductionMethod) {
-        TaxYearSummaryBuilder.compareBothMethods(shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear)
+        TaxYearSummaryBuilder.compareBothMethods(shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, vehicle: vehicles.first)
     }
 
     private var breakeven: BreakevenMileageCalculator.Result? {
