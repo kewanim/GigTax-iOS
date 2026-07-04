@@ -130,7 +130,7 @@ Week 7  → S6: Dashboard             [DONE]
 Week 8  → S7: Optimizer & Audit     [DONE]
            Deduction Optimizer, Audit Shield, mileage log PDF, Schedule C
 
-Week 9  → S8: iOS Features          [NOT STARTED]
+Week 9  → S8: iOS Features          [DONE]
            Widgets, Live Activity, Siri, Face ID
 
 Week 10 → S9: Polish & App Store    [NOT STARTED]
@@ -144,9 +144,9 @@ Change `[NOT STARTED]` → `[IN PROGRESS]` → `[DONE]`
 
 ## Current Status
 
-**Stage:** Building — S0 through S7 complete
-**Last worked on:** S7 Optimizer & Audit Shield — a full-screen Deduction Optimizer with a breakeven-mileage chart; Audit Shield (plain-English explainer, GPS-backed mileage log with reverse-geocoded addresses, real ShareLink PDF export via UIGraphicsPDFRenderer); a Schedule C summary that relabels existing tax math onto actual Form 1040 lines; full JSON/CSV data export (new, previously-stub Settings screen now hosts it); and a year-end checklist (untagged trips, missing purposes, receiptless expenses, stale odometer) surfaced starting Q4. Also added optional `driverName` to DriverProfile (the app had no name field anywhere before this) and `startAddress`/`endAddress` to Trip for the mileage log. Deliberately kept `CLGeocoder` over the newer `MKReverseGeocodingRequest` since the MapKit replacement requires iOS 26.0+ and would break the app's iOS 17+ target. Shipped across 4 PRs on separate branches, each merged after a green test run.
-**Next step:** S8 — iOS Features (widgets, Live Activity, Siri shortcuts, Face ID lock)
+**Stage:** Building — S0 through S8 complete
+**Last worked on:** S8 iOS Features — a real `GigTaxWidget` extension target (small "today's earnings" widget, medium "YTD tax owed" widget, both reading the live SwiftData store via a shared App Group container); a Live Activity showing miles + estimated fuel cost for an in-progress trip (Lock Screen + Dynamic Island); two Siri/Shortcuts App Intents ("Log a shift" pre-filled with the last platform, "How much do I owe in taxes?" with a spoken + visual answer); Face ID/Touch ID app lock; and quarterly tax due-date push notifications (8/year, rescheduled automatically as the tax total changes). Also caught and fixed the project's actual deployment target, which was silently set to iOS 26.5 (Xcode's default from S0) despite the docs stating iOS 17+ since the start — lowered to 17.0 and verified nothing in the app needed anything newer. The widget extension target was created safely via the `xcodeproj` Ruby gem rather than hand-editing project.pbxproj, with a real bug caught and fixed along the way (a blank `PRODUCT_NAME` producing an unnamed `.appex` bundle). Shipped across 6 PRs on separate branches, each merged after a green test run.
+**Next step:** S9 — Polish & App Store (accessibility, iPad layout, icon, screenshots, submission)
 
 **Open questions / decisions still to make:**
 - [ ] Free / paid / subscription pricing model
