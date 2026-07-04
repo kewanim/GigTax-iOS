@@ -127,7 +127,7 @@ Week 6  → S5: Tax Engine            [DONE]
 Week 7  → S6: Dashboard             [DONE]
            Live tax view, net hourly rate, platform comparison, charts
 
-Week 8  → S7: Optimizer & Audit     [NOT STARTED]
+Week 8  → S7: Optimizer & Audit     [DONE]
            Deduction Optimizer, Audit Shield, mileage log PDF, Schedule C
 
 Week 9  → S8: iOS Features          [NOT STARTED]
@@ -144,9 +144,9 @@ Change `[NOT STARTED]` → `[IN PROGRESS]` → `[DONE]`
 
 ## Current Status
 
-**Stage:** Building — S0 through S6 complete
-**Last worked on:** S6 Dashboard — YTD gross/net/tax header with effective/marginal rate pills, a tappable tax waterfall, a 2x2 quarterly-payment grid (next due highlighted, past due in red), a live Standard-vs-Actual toggle, a tax-year selector, a 12-month earnings chart, a GPS-vs-platform-reported mileage comparison, net hourly rate, platform profitability ranking, a tax savings jar with an on-track progress bar, and earnings pattern insights (best day/platform, gated on 4+ weeks of data). Also extracted a shared `TaxYearSummaryBuilder` used by both the Dashboard and Quarterly Payments screen, fixing a latent bug where trips/expenses weren't filtered to the selected tax year. Shipped across 4 PRs on separate branches, each merged after a green test run.
-**Next step:** S7 — Optimizer & Audit (Deduction Optimizer, Audit Shield, mileage log PDF, Schedule C)
+**Stage:** Building — S0 through S7 complete
+**Last worked on:** S7 Optimizer & Audit Shield — a full-screen Deduction Optimizer with a breakeven-mileage chart; Audit Shield (plain-English explainer, GPS-backed mileage log with reverse-geocoded addresses, real ShareLink PDF export via UIGraphicsPDFRenderer); a Schedule C summary that relabels existing tax math onto actual Form 1040 lines; full JSON/CSV data export (new, previously-stub Settings screen now hosts it); and a year-end checklist (untagged trips, missing purposes, receiptless expenses, stale odometer) surfaced starting Q4. Also added optional `driverName` to DriverProfile (the app had no name field anywhere before this) and `startAddress`/`endAddress` to Trip for the mileage log. Deliberately kept `CLGeocoder` over the newer `MKReverseGeocodingRequest` since the MapKit replacement requires iOS 26.0+ and would break the app's iOS 17+ target. Shipped across 4 PRs on separate branches, each merged after a green test run.
+**Next step:** S8 — iOS Features (widgets, Live Activity, Siri shortcuts, Face ID lock)
 
 **Open questions / decisions still to make:**
 - [ ] Free / paid / subscription pricing model
