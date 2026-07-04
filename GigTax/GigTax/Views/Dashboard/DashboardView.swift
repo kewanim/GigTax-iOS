@@ -108,6 +108,9 @@ struct DashboardView: View {
                             NavigationLink("Schedule C Summary") {
                                 ScheduleCSummaryView(taxYear: taxYear)
                             }
+                            NavigationLink("What If I Drove More?") {
+                                WhatIfSimulatorView(taxYear: taxYear)
+                            }
                         }
 
                         Section {
