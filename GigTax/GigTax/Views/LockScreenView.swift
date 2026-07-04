@@ -8,8 +8,9 @@ struct LockScreenView: View {
             Color(.systemBackground).ignoresSafeArea()
             VStack(spacing: 20) {
                 Image(systemName: "lock.fill")
-                    .font(.system(size: 48))
+                    .font(.largeTitle)
                     .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
                 Text("GigTax is Locked")
                     .font(.title2)
                     .fontWeight(.semibold)

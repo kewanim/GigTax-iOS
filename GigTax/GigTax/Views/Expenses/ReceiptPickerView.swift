@@ -32,6 +32,7 @@ struct ReceiptPickerView: View {
                     } label: {
                         Image(systemName: "trash")
                     }
+                    .accessibilityLabel("Delete Receipt")
                 }
             } else {
                 Menu {

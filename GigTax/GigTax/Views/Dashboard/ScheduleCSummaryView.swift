@@ -46,6 +46,7 @@ struct ScheduleCSummaryView: View {
                         Text(item.amount, format: .currency(code: "USD"))
                             .fontWeight(item.line == "Line 31" ? .bold : .regular)
                     }
+                    .accessibilityElement(children: .combine)
                 }
             } header: {
                 Text("Schedule C — Tax Year \(String(taxYear))")

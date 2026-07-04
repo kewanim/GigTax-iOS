@@ -39,6 +39,12 @@ struct EarningsView: View {
             .sorted { $0.total > $1.total }
     }
 
+    private var platformTotalsAccessibilitySummary: String {
+        platformTotals
+            .map { "\($0.platform.rawValue): \($0.total.formatted(.currency(code: "USD")))" }
+            .joined(separator: ", ")
+    }
+
     var body: some View {
         NavigationStack {
             List {
@@ -81,6 +87,9 @@ struct EarningsView: View {
                                 .foregroundStyle(Color.accentColor)
                             }
                             .frame(height: CGFloat(platformTotals.count) * 36 + 20)
+                            .accessibilityElement()
+                            .accessibilityLabel("Earnings by platform")
+                            .accessibilityValue(platformTotalsAccessibilitySummary)
                         }
                     }
 
@@ -111,6 +120,7 @@ struct EarningsView: View {
                         Image(systemName: "plus")
                     }
                     .accessibilityIdentifier("addShiftMenu")
+                    .accessibilityLabel("Add Shift")
                 }
             }
             .sheet(isPresented: $showImport) {
@@ -157,6 +167,7 @@ private struct ShiftRow: View {
                 .font(.subheadline).fontWeight(.semibold)
         }
         .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
     }
 
     private var breakdown: String {

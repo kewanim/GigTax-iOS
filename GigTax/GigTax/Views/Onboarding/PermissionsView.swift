@@ -19,8 +19,9 @@ struct PermissionsView: View {
                             .fill(Color.blue.opacity(0.1))
                             .frame(width: 120, height: 120)
                         Image(systemName: "location.fill")
-                            .font(.system(size: 52))
+                            .font(.largeTitle)
                             .foregroundStyle(.blue)
+                            .accessibilityHidden(true)
                     }
 
                     VStack(spacing: 12) {
@@ -112,6 +113,7 @@ struct PermissionsView: View {
             }
             Spacer()
         }
+        .accessibilityElement(children: .combine)
     }
 }
 

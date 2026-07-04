@@ -272,6 +272,7 @@ private struct DashboardHeaderCard: View {
             }
         }
         .padding(.vertical, 8)
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -367,6 +368,7 @@ private struct QuarterCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemGroupedBackground)))
         .overlay(RoundedRectangle(cornerRadius: 10).stroke(borderColor, lineWidth: 2))
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -384,6 +386,8 @@ private struct WaterfallRow: View {
                 .foregroundStyle(line.amount(taxSummary) < 0 ? .red : .primary)
         }
         .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("Double tap for an explanation")
     }
 }
 
@@ -428,6 +432,15 @@ private struct MonthlyEarningsChart: View {
         MonthlyEarningsCalculator.monthSymbols[month - 1]
     }
 
+    private var accessibilitySummary: String {
+        let monthlyTotals = Dictionary(grouping: totals, by: \.month)
+            .map { (month: $0.key, total: $0.value.reduce(0) { $0 + $1.total }) }
+            .sorted { $0.month < $1.month }
+        return monthlyTotals
+            .map { "\(monthLabel($0.month)): \($0.total.formatted(.currency(code: "USD")))" }
+            .joined(separator: ", ")
+    }
+
     var body: some View {
         if totals.isEmpty {
             Text("No earnings logged this year yet.")
@@ -451,6 +464,9 @@ private struct MonthlyEarningsChart: View {
             }
             .frame(height: 220)
             .padding(.vertical, 4)
+            .accessibilityElement()
+            .accessibilityLabel("Monthly earnings this year")
+            .accessibilityValue(accessibilitySummary)
         }
     }
 }
@@ -484,6 +500,7 @@ private struct MileageComparisonCard: View {
             }
         }
         .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -503,6 +520,7 @@ private struct HourlyRateRow: View {
             }
         }
         .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -516,6 +534,7 @@ private struct PlatformRateRow: View {
             Text("\(rate.netPerHour.formatted(.currency(code: "USD")))/hr net")
                 .foregroundStyle(.secondary)
         }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -544,13 +563,15 @@ private struct EarningsInsightsCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Image(systemName: "calendar").foregroundStyle(.secondary)
+                Image(systemName: "calendar").foregroundStyle(.secondary).accessibilityHidden(true)
                 Text("Best day: **\(insights.bestDayOfWeek)** (avg \(insights.bestDayAverage.formatted(.currency(code: "USD"))))")
             }
+            .accessibilityElement(children: .combine)
             HStack {
-                Image(systemName: "trophy").foregroundStyle(.secondary)
+                Image(systemName: "trophy").foregroundStyle(.secondary).accessibilityHidden(true)
                 Text("Best platform: **\(insights.bestPlatform.rawValue)** (\(insights.bestPlatformTotal.formatted(.currency(code: "USD"))) total)")
             }
+            .accessibilityElement(children: .combine)
         }
         .font(.subheadline)
         .padding(.vertical, 2)
@@ -570,6 +591,7 @@ private struct YearEndChecklistRow: View {
                 .foregroundStyle(.secondary)
         }
         .font(.subheadline)
+        .accessibilityElement(children: .combine)
     }
 }
 

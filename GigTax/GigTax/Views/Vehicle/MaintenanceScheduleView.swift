@@ -47,6 +47,7 @@ struct MaintenanceScheduleView: View {
                     Image(systemName: "plus")
                 }
                 .accessibilityIdentifier("addMaintenanceItemButton")
+                .accessibilityLabel("Add Maintenance Item")
             }
         }
         .sheet(isPresented: $showAdd) {
@@ -90,6 +91,7 @@ private struct MaintenanceRow: View {
             }
         }
         .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
     }
 }
 

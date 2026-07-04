@@ -429,8 +429,8 @@ const SPRINTS = [
     dates: 'Week 10',
     goal: '<strong>Goal:</strong> GigTax ships looking and feeling like a $10/month app. Accessibility, iPad layout, beautiful onboarding, App Store listing, and TestFlight beta. Ready for review.',
     stories: [
-      { id:'GT-078', title:'Dynamic Type support (all text scales)', epic:'Polish', type:'chore', pts:2, status:'backlog', ac:'All text uses .body/.headline etc. No truncation at largest sizes.' },
-      { id:'GT-079', title:'VoiceOver accessibility labels on all interactive elements', epic:'Polish', type:'chore', pts:2, status:'backlog', ac:'Audit with VoiceOver on device. All cards, buttons, charts labeled.' },
+      { id:'GT-078', title:'Dynamic Type support (all text scales)', epic:'Polish', type:'chore', pts:2, status:'done', ac:'All text uses .body/.headline etc. No truncation at largest sizes. Fixed the only 3 hardcoded .font(.system(size:)) instances (lock screen + onboarding hero icons) to use semantic styles.' },
+      { id:'GT-079', title:'VoiceOver accessibility labels on all interactive elements', epic:'Polish', type:'chore', pts:2, status:'done', ac:'Code-level audit (not an on-device VoiceOver walkthrough) across all 31 view files: 7 icon-only buttons labeled, 25 card/row groupings combined into single elements, 3 charts given accessibility summaries.' },
       { id:'GT-080', title:'iPad adaptive layout (sidebar navigation)', epic:'Polish', type:'feature', pts:3, status:'backlog', ac:'NavigationSplitView on iPad. Sidebar shows tabs. Detail shows selected screen.' },
       { id:'GT-081', title:'Pick app logo/icon design + produce all sizes (dark + tinted variants)', epic:'Polish', type:'design', pts:2, status:'backlog', ac:'Logo/icon concept picked with driver first (kept open until S9). iOS 18 adaptive icon. Works on all wallpapers. Exported to all required sizes.' },
       { id:'GT-082', title:'Onboarding illustration set (3–4 screens)', epic:'Polish', type:'design', pts:3, status:'backlog', ac:'Explains: auto-tracking, deduction optimizer, tax estimate. Consistent style with app.' },

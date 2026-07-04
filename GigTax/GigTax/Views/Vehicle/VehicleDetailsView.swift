@@ -95,6 +95,7 @@ struct VehicleDetailsView: View {
                     .font(.caption2).foregroundStyle(.secondary)
             }
         }
+        .accessibilityElement(children: .combine)
     }
 
     private var estimatedOdometer: Double {

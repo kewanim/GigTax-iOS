@@ -53,6 +53,7 @@ struct TripsView: View {
                     Button { showManualEntry = true } label: {
                         Image(systemName: "plus")
                     }
+                    .accessibilityLabel("Log Trip")
                 }
             }
             .sheet(isPresented: $showManualEntry) {
@@ -93,8 +94,10 @@ private struct ActiveTripBanner: View {
             }
             Spacer()
             Circle().fill(.green).frame(width: 8, height: 8)
+                .accessibilityHidden(true)
         }
         .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -132,6 +135,7 @@ private struct TripRow: View {
             }
         }
         .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
     }
 }
 

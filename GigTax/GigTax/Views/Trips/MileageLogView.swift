@@ -108,6 +108,7 @@ private struct MileageLogRow: View {
             }
         }
         .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
     }
 }
 
