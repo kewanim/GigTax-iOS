@@ -124,15 +124,11 @@
 		};
 		120B04882FF4EBC400C0C833 /* GigTaxTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = GigTaxTests;
 			sourceTree = "<group>";
 		};
 		120B04922FF4EBC400C0C833 /* GigTaxUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = GigTaxUITests;
 			sourceTree = "<group>";
 		};
@@ -219,7 +215,6 @@
 				BF4F64D56519D9D623E6EEB8 /* TaxOwedWidget.swift */,
 				20BEC637E2DED94F887C318D /* TripLiveActivity.swift */,
 			);
-			name = GigTaxWidget;
 			path = GigTaxWidget;
 			sourceTree = "<group>";
 		};

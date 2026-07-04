@@ -24,6 +24,18 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
+                if let driverProfile {
+                    Section {
+                        NavigationLink {
+                            ProfileEditView(driverProfile: driverProfile)
+                        } label: {
+                            Label("Edit Profile", systemImage: "person.crop.circle")
+                        }
+                    } footer: {
+                        Text("Filing status, state, county, goals, and deduction defaults.")
+                    }
+                }
+
                 Section {
                     Toggle("Face ID / Touch ID Lock", isOn: biometricLockBinding)
                 } footer: {

@@ -10,7 +10,7 @@ struct MarylandCountyTaxTests {
 
     @Test func allTwentyFourJurisdictionsAreRecognizedAndNonZero() {
         let flatCounties = [
-            "Allegany", "Baltimore City", "Baltimore", "Calvert", "Caroline", "Carroll", "Cecil",
+            "Allegany", "Baltimore City", "Baltimore County", "Calvert", "Caroline", "Carroll", "Cecil",
             "Charles", "Dorchester", "Garrett", "Harford", "Howard", "Kent", "Montgomery",
             "Prince George's", "Queen Anne's", "St. Mary's", "Somerset", "Talbot", "Washington",
             "Wicomico", "Worcester",
@@ -19,6 +19,34 @@ struct MarylandCountyTaxTests {
         for county in flatCounties {
             let tax = MarylandCountyTax.tax(onMarylandTaxableIncome: 50_000, county: county, filingStatus: .single)
             #expect(tax > 0, "\(county) produced zero tax — likely missing from the table")
+        }
+    }
+
+    /// Regression test for a real bug: the onboarding picker's county list
+    /// (`MDCounties.all`) and this lookup table were built independently and
+    /// used different spellings for the same jurisdiction ("Baltimore County"
+    /// vs. "Baltimore") — silently invisible because both happened to share
+    /// the same 3.20% rate as the fallback. Cross-checks every rate against
+    /// the exact strings the onboarding UI actually produces, with rates
+    /// that are NOT all identical to the fallback, so a future naming drift
+    /// can't hide behind a lucky coincidence again.
+    @Test func everyOnboardingCountyStringResolvesToItsRealRate() {
+        let expectedRates: [String: Double] = [
+            "Allegany": 0.0305, "Baltimore City": 0.0320, "Baltimore County": 0.0320,
+            "Calvert": 0.0320, "Caroline": 0.0320, "Carroll": 0.0303, "Cecil": 0.0274,
+            "Charles": 0.0303, "Dorchester": 0.0330, "Garrett": 0.0265, "Harford": 0.0306,
+            "Howard": 0.0320, "Kent": 0.0320, "Montgomery": 0.0320, "Prince George's": 0.0320,
+            "Queen Anne's": 0.0320, "Somerset": 0.0320, "St. Mary's": 0.0320, "Talbot": 0.0240,
+            "Washington": 0.0295, "Wicomico": 0.0320, "Worcester": 0.0225,
+        ]
+        for county in MDCounties.all where county != "Anne Arundel" && county != "Frederick" {
+            guard let expectedRate = expectedRates[county] else {
+                Issue.record("No expected rate defined for onboarding county '\(county)' — test needs updating")
+                continue
+            }
+            let tax = MarylandCountyTax.tax(onMarylandTaxableIncome: 100_000, county: county, filingStatus: .single)
+            let expected = 100_000 * expectedRate
+            #expect(abs(tax - expected) < 0.01, "\(county) expected \(expectedRate) but got a different effective rate")
         }
     }
 

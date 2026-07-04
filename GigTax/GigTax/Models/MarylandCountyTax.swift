@@ -12,7 +12,7 @@ enum MarylandCountyTax {
     private static let flatRates: [String: Double] = [
         "Allegany": 0.0305,
         "Baltimore City": 0.0320,
-        "Baltimore": 0.0320,
+        "Baltimore County": 0.0320,
         "Calvert": 0.0320,
         "Caroline": 0.0320,
         "Carroll": 0.0303,
