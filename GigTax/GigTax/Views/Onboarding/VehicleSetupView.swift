@@ -19,6 +19,8 @@ struct VehicleSetupView: View {
     @State private var isLoadingModels = false
     @State private var isLoadingMPG = false
     @State private var mpgError = false
+    @State private var makesError = false
+    @State private var modelsError = false
 
     private let years = Array(stride(from: Calendar.current.component(.year, from: .now), through: 1990, by: -1))
 
@@ -53,6 +55,13 @@ struct VehicleSetupView: View {
                 Section("Make") {
                     if isLoadingMakes {
                         HStack { Spacer(); ProgressView(); Spacer() }
+                    } else if makesError {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label("Couldn't load vehicle makes — check your connection.", systemImage: "wifi.slash")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Button("Retry") { Task { await loadMakes() } }
+                        }
                     } else if makes.isEmpty {
                         Button("Load Vehicle Makes") { Task { await loadMakes() } }
                     } else if let make = selectedMake {
@@ -81,6 +90,15 @@ struct VehicleSetupView: View {
                     Section("Model") {
                         if isLoadingModels {
                             HStack { Spacer(); ProgressView(); Spacer() }
+                        } else if modelsError {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Label("Couldn't load models — check your connection.", systemImage: "wifi.slash")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Button("Retry") {
+                                    if let make = selectedMake { selectMake(make) }
+                                }
+                            }
                         } else if let model = selectedModel {
                             HStack {
                                 Text(model.name).fontWeight(.semibold)
@@ -149,8 +167,13 @@ struct VehicleSetupView: View {
                                     .fontWeight(.semibold)
                             }
                         } else if mpgError {
-                            Text("EPA data unavailable — enter MPG manually.")
-                                .font(.caption).foregroundStyle(.secondary)
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("EPA data unavailable — enter MPG manually, or retry.")
+                                    .font(.caption).foregroundStyle(.secondary)
+                                Button("Retry") {
+                                    if let model = selectedModel { selectModel(model) }
+                                }
+                            }
                         }
                     }
 
@@ -213,8 +236,12 @@ struct VehicleSetupView: View {
 
     private func loadMakes() async {
         isLoadingMakes = true
-        do { makes = try await NHTSAService.shared.fetchMakes() }
-        catch { }
+        makesError = false
+        do {
+            makes = try await NHTSAService.shared.fetchMakes()
+        } catch {
+            makesError = true
+        }
         isLoadingMakes = false
     }
 
@@ -223,9 +250,13 @@ struct VehicleSetupView: View {
         data.makeName = make.name
         makeSearch = ""
         isLoadingModels = true
+        modelsError = false
         Task {
-            do { models = try await NHTSAService.shared.fetchModels(makeId: make.id) }
-            catch { }
+            do {
+                models = try await NHTSAService.shared.fetchModels(makeId: make.id)
+            } catch {
+                modelsError = true
+            }
             isLoadingModels = false
         }
     }

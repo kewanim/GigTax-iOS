@@ -73,7 +73,7 @@ actor EIAService {
         }
 
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
+            let (data, _) = try await NetworkRequest.data(from: url)
             if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                let response = json["response"] as? [String: Any],
                let dataArr = response["data"] as? [[String: Any]],
