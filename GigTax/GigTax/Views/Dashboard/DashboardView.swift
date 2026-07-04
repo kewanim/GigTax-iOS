@@ -8,6 +8,7 @@ struct DashboardView: View {
     @Query private var expenses: [Expense]
     @Query private var driverProfiles: [DriverProfile]
     @Query private var payments: [QuarterlyPayment]
+    @Query private var vehicles: [Vehicle]
 
     @State private var taxYear = Calendar.current.component(.year, from: .now)
     @State private var methodOverride: DeductionMethod?
@@ -68,6 +69,10 @@ struct DashboardView: View {
         EarningsPatternAnalyzer.analyze(shifts: yearShifts)
     }
 
+    private var yearEndChecklist: YearEndChecklistCalculator.Checklist {
+        YearEndChecklistCalculator.generate(trips: trips, expenses: expenses, vehicle: vehicles.first, taxYear: taxYear)
+    }
+
     var body: some View {
         NavigationStack {
             Group {
@@ -81,6 +86,14 @@ struct DashboardView: View {
                     List {
                         Section {
                             DashboardHeaderCard(taxSummary: taxSummary)
+                        }
+
+                        if YearEndChecklistCalculator.isYearEndWindow(), !yearEndChecklist.isEmpty {
+                            Section("Year-End Checklist") {
+                                ForEach(yearEndChecklist.items) { item in
+                                    YearEndChecklistRow(item: item)
+                                }
+                            }
                         }
 
                         Section {
@@ -534,7 +547,23 @@ private struct EarningsInsightsCard: View {
     }
 }
 
+private struct YearEndChecklistRow: View {
+    let item: YearEndChecklistCalculator.ChecklistItem
+
+    var body: some View {
+        HStack {
+            Image(systemName: item.severity == .warning ? "exclamationmark.triangle.fill" : "info.circle")
+                .foregroundStyle(item.severity == .warning ? .orange : .secondary)
+            Text(item.title)
+            Spacer()
+            Text("\(item.count)")
+                .foregroundStyle(.secondary)
+        }
+        .font(.subheadline)
+    }
+}
+
 #Preview {
     DashboardView()
-        .modelContainer(for: [Shift.self, Trip.self, Expense.self, DriverProfile.self, QuarterlyPayment.self], inMemory: true)
+        .modelContainer(for: [Shift.self, Trip.self, Expense.self, DriverProfile.self, QuarterlyPayment.self, Vehicle.self], inMemory: true)
 }
