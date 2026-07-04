@@ -92,6 +92,9 @@ struct DashboardView: View {
                             NavigationLink("View Full Comparison") {
                                 DeductionOptimizerView(taxYear: taxYear)
                             }
+                            NavigationLink("Schedule C Summary") {
+                                ScheduleCSummaryView(taxYear: taxYear)
+                            }
                         }
 
                         Section {
