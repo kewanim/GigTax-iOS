@@ -20,5 +20,7 @@
 	<string>GigTax tracks your trips in the background to record all your miles — including deadhead miles Uber and Lyft don't count — so you get the maximum deduction.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>GigTax uses your camera to photograph receipts for expense tracking.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>GigTax uses Face ID to lock your earnings and tax data when the optional app lock is enabled.</string>
 </dict>
 </plist>
