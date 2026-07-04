@@ -74,7 +74,7 @@ actor EPAService {
         let urlStr = "\(base)/menu/options?year=\(year)&make=\(encodedMake)&model=\(encodedModel)"
         guard let url = URL(string: urlStr) else { return [] }
 
-        let (data, _) = try await URLSession.shared.data(from: url)
+        let (data, _) = try await NetworkRequest.data(from: url)
         let parser = MenuItemParser()
         let xml = XMLParser(data: data)
         xml.delegate = parser
@@ -84,7 +84,7 @@ actor EPAService {
 
     func fetchMPG(vehicleId: String) async throws -> EPAMPGResult? {
         guard let url = URL(string: "\(base)/\(vehicleId)") else { return nil }
-        let (data, _) = try await URLSession.shared.data(from: url)
+        let (data, _) = try await NetworkRequest.data(from: url)
         let parser = VehicleParser()
         let xml = XMLParser(data: data)
         xml.delegate = parser

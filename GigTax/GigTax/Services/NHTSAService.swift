@@ -32,7 +32,7 @@ actor NHTSAService {
     func fetchMakes() async throws -> [NHTSAMake] {
         if let cached = makesCache { return cached }
         let url = URL(string: "\(base)/getallmakes?format=json")!
-        let (data, _) = try await URLSession.shared.data(from: url)
+        let (data, _) = try await NetworkRequest.data(from: url)
         let response = try JSONDecoder().decode(NHTSAResponse<NHTSAMake>.self, from: data)
         let sorted = response.results.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         makesCache = sorted
@@ -41,7 +41,7 @@ actor NHTSAService {
 
     func fetchModels(makeId: Int) async throws -> [NHTSAModel] {
         let url = URL(string: "\(base)/getmodelsformakeid/\(makeId)?format=json")!
-        let (data, _) = try await URLSession.shared.data(from: url)
+        let (data, _) = try await NetworkRequest.data(from: url)
         let response = try JSONDecoder().decode(NHTSAResponse<NHTSAModel>.self, from: data)
         return response.results.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
