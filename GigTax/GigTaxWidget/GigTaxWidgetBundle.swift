@@ -6,5 +6,6 @@ struct GigTaxWidgetBundle: WidgetBundle {
     var body: some Widget {
         TodayEarningsWidget()
         TaxOwedWidget()
+        TripLiveActivity()
     }
 }

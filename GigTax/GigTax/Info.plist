@@ -22,5 +22,7 @@
 	<string>GigTax uses your camera to photograph receipts for expense tracking.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>GigTax uses Face ID to lock your earnings and tax data when the optional app lock is enabled.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 </dict>
 </plist>
