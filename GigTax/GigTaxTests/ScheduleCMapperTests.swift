@@ -4,15 +4,18 @@ import Foundation
 
 struct ScheduleCMapperTests {
 
-    private func makeComparison(businessMiles: Double, nonVehicleExpenses: Double, vehicleExpenses: Double, businessUsePercent: Double) -> DeductionMethodCalculator.Comparison {
+    private func makeComparison(
+        businessMiles: Double, nonVehicleExpenses: Double, vehicleExpenses: Double, businessUsePercent: Double, depreciationDeduction: Double = 0
+    ) -> DeductionMethodCalculator.Comparison {
         let standard = businessMiles * 0.70 + nonVehicleExpenses
-        let actual = vehicleExpenses * (businessUsePercent / 100) + nonVehicleExpenses
+        let actual = vehicleExpenses * (businessUsePercent / 100) + nonVehicleExpenses + depreciationDeduction
         return DeductionMethodCalculator.Comparison(
             businessMiles: businessMiles,
             totalMiles: businessMiles,
             businessUsePercent: businessUsePercent,
             nonVehicleExpenses: nonVehicleExpenses,
             vehicleExpenses: vehicleExpenses,
+            depreciationDeduction: depreciationDeduction,
             standardMileageDeduction: standard,
             actualExpenseDeduction: actual
         )
@@ -67,5 +70,31 @@ struct ScheduleCMapperTests {
         let comparison = makeComparison(businessMiles: 50_000, nonVehicleExpenses: 10_000, vehicleExpenses: 0, businessUsePercent: 100)
         let summary = ScheduleCMapper.summary(comparison: comparison, method: .standard, grossIncome: 100)
         #expect(summary.netProfit == 0)
+    }
+
+    @Test func depreciationAppearsOnLine13NotLine9UnderActualMethod() {
+        let comparison = makeComparison(businessMiles: 1_000, nonVehicleExpenses: 0, vehicleExpenses: 2_000, businessUsePercent: 100, depreciationDeduction: 5_000)
+        let summary = ScheduleCMapper.summary(comparison: comparison, method: .actual, grossIncome: 20_000)
+
+        let line9 = summary.lineItems.first { $0.line == "Line 9" }!.amount
+        let line13 = summary.lineItems.first { $0.line == "Line 13" }
+        #expect(abs(line9 - 2_000) < 0.01) // vehicle operating cost only, depreciation excluded
+        #expect(line13 != nil)
+        #expect(abs(line13!.amount - 5_000) < 0.01)
+    }
+
+    @Test func depreciationDoesNotAppearUnderStandardMileageMethod() {
+        // Depreciation is baked into the standard rate — no separate Line 13
+        // even if the driver has a depreciation figure on file.
+        let comparison = makeComparison(businessMiles: 1_000, nonVehicleExpenses: 0, vehicleExpenses: 2_000, businessUsePercent: 100, depreciationDeduction: 5_000)
+        let summary = ScheduleCMapper.summary(comparison: comparison, method: .standard, grossIncome: 20_000)
+        #expect(summary.lineItems.first { $0.line == "Line 13" } == nil)
+    }
+
+    @Test func totalExpensesIncludesDepreciationUnderActualMethod() {
+        let comparison = makeComparison(businessMiles: 1_000, nonVehicleExpenses: 100, vehicleExpenses: 2_000, businessUsePercent: 100, depreciationDeduction: 5_000)
+        let summary = ScheduleCMapper.summary(comparison: comparison, method: .actual, grossIncome: 20_000)
+        // vehicle op (2,000) + depreciation (5,000) + other (100) = 7,100
+        #expect(abs(summary.totalExpenses - 7_100) < 0.01)
     }
 }

@@ -31,9 +31,10 @@ struct TaxOwedProvider: TimelineProvider {
         let trips = (try? context.fetch(FetchDescriptor<Trip>())) ?? []
         let expenses = (try? context.fetch(FetchDescriptor<Expense>())) ?? []
         let driverProfile = (try? context.fetch(FetchDescriptor<DriverProfile>()))?.first
+        let vehicle = (try? context.fetch(FetchDescriptor<Vehicle>()))?.first
 
         let taxYear = Calendar.current.component(.year, from: .now)
-        let summary = TaxYearSummaryBuilder.build(shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear)
+        let summary = TaxYearSummaryBuilder.build(shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, vehicle: vehicle)
         let quarters = QuarterlyTaxCalculator.quarters(totalTaxOwed: summary.totalTax, forYear: taxYear)
         let nextQuarter = quarters.first { $0.dueDate > .now }
 
