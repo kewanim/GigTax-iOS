@@ -17,10 +17,10 @@ struct ManualShiftEntryView: View {
     @State private var hoursWorkedText: String
     @State private var notes: String
 
-    init(editing shift: Shift? = nil) {
+    init(editing shift: Shift? = nil, defaultPlatform: Platform? = nil) {
         editingShift = shift
         _date = State(initialValue: shift?.date ?? Date())
-        _platform = State(initialValue: shift?.platform ?? .uber)
+        _platform = State(initialValue: shift?.platform ?? defaultPlatform ?? .uber)
         _grossIncomeText = State(initialValue: shift.map { $0.grossIncome == 0 ? "" : String($0.grossIncome) } ?? "")
         _tipsText = State(initialValue: shift.map { $0.tips == 0 ? "" : String($0.tips) } ?? "")
         _bonusesText = State(initialValue: shift.map { $0.bonuses == 0 ? "" : String($0.bonuses) } ?? "")
@@ -117,6 +117,7 @@ struct ManualShiftEntryView: View {
             )
             modelContext.insert(shift)
         }
+        LastUsedPlatformStore.record(platform)
         dismiss()
     }
 }

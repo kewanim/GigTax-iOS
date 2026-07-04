@@ -11,8 +11,17 @@ struct ContentView: View {
     @Query private var vehicles: [Vehicle]
     @Query private var driverProfiles: [DriverProfile]
 
+    private let navigationCoordinator = AppNavigationCoordinator.shared
+
     private var biometricLockEnabled: Bool {
         driverProfiles.first?.biometricLockEnabled ?? false
+    }
+
+    private var pendingDestinationBinding: Binding<AppNavigationCoordinator.Destination?> {
+        Binding(
+            get: { navigationCoordinator.pendingDestination },
+            set: { navigationCoordinator.pendingDestination = $0 }
+        )
     }
 
     var body: some View {
@@ -48,6 +57,12 @@ struct ContentView: View {
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .background, biometricLockEnabled {
                     lockService.lock()
+                }
+            }
+            .sheet(item: pendingDestinationBinding) { destination in
+                switch destination {
+                case .logShift(let platform):
+                    ManualShiftEntryView(defaultPlatform: platform)
                 }
             }
         } else {
