@@ -89,6 +89,9 @@ struct DashboardView: View {
                                 selectedMethod: selectedMethod,
                                 onSelect: { methodOverride = $0 }
                             )
+                            NavigationLink("View Full Comparison") {
+                                DeductionOptimizerView(taxYear: taxYear)
+                            }
                         }
 
                         Section {
