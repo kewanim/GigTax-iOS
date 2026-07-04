@@ -6,6 +6,32 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		144CA9741B5C57AB905AAAC9 /* TaxOwedWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4F64D56519D9D623E6EEB8 /* TaxOwedWidget.swift */; };
+		1BF90AE7548E185EC72A0D74 /* RecurringExpense.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC2182BC49E1F5238251358 /* RecurringExpense.swift */; };
+		254C18308602C03E1C2F927E /* SelfEmploymentTaxCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B6625916AA712088FCDCDB /* SelfEmploymentTaxCalculator.swift */; };
+		285D3E8E33E8F22266BFE19B /* StateTaxCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4523E2BFA08771DF6842BC46 /* StateTaxCalculator.swift */; };
+		320E243FAA8C4A1355E8ED29 /* MaintenanceScheduleItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41D3AAFF3804832112942C13 /* MaintenanceScheduleItem.swift */; };
+		33B45536E898B15D2030AE84 /* MarylandCountyTax.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E6C34298E7216E00D260E3C /* MarylandCountyTax.swift */; };
+		3C029753D16DCB96B200D9FD /* TodayEarningsWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5691A03AEAF3AFF5C11973A /* TodayEarningsWidget.swift */; };
+		5023BA02CA00EE171DAB460C /* FederalTaxCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04A2111B7304D3D9D5AF48A2 /* FederalTaxCalculator.swift */; };
+		6E4AF90E6A56C2B0A7AA57B1 /* QuarterlyPayment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AF4BEC6F06ECA4823EA41B2 /* QuarterlyPayment.swift */; };
+		87302A075A0C3BC20615A94C /* Enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B0671B3DF67E815D684B367 /* Enums.swift */; };
+		88408397CD094AACE5E6D96C /* GigTaxWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BC5AC9CF4BDDDE425CF651 /* GigTaxWidgetBundle.swift */; };
+		8FFF5A0E15607482740008CE /* Shift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6AC317B3A9FC426960833D /* Shift.swift */; };
+		A0D13DB3808E8FD4A0B6EFE8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B36F8E388552C610B56A2509 /* Foundation.framework */; };
+		A20069C9A96A231CF15258AC /* DriverProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05626D91B3C3EBF21E6111C6 /* DriverProfile.swift */; };
+		B3A189580D4A7894C5352ABC /* Vehicle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5473C127A80B6B3B8860221 /* Vehicle.swift */; };
+		BD669DD64930F744A1C6981D /* TaxEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC2CBC88DC73A22E6509ADF /* TaxEngine.swift */; };
+		C3CEAF7F284F032D81E70859 /* Expense.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA3588C52D186A5A6E3C1786 /* Expense.swift */; };
+		CC6EFE83896060D493319A6A /* TaxYearSummaryBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE643726CBAB49F2B11D0F00 /* TaxYearSummaryBuilder.swift */; };
+		D858DD92A60ED13726E30A43 /* GigTaxWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B338293140C0E37EAB02649F /* GigTaxWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DD5C8955352F322C6EEA7E13 /* GigTaxModelContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9389BF8648F18ADC9A1E2BA0 /* GigTaxModelContainer.swift */; };
+		E8DAEB088C8F547F48FED99E /* QuarterlyTaxCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4050E46036C2629776FD7A6A /* QuarterlyTaxCalculator.swift */; };
+		ED355E0254CF1FE096D16E6F /* Trip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E9414EA957F6111A52E356 /* Trip.swift */; };
+		EFB0461A0BA7BBB951002F20 /* DeductionMethodCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E341024C5CA103C2A93B321D /* DeductionMethodCalculator.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		120B04862FF4EBC400C0C833 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -21,12 +47,56 @@
 			remoteGlobalIDString = 120B04732FF4EBC200C0C833;
 			remoteInfo = GigTax;
 		};
+		B7AD3D35DF5181EF4EDD8ADB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 120B046C2FF4EBC200C0C833 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 118E73BAEF1F020F86765D7F;
+			remoteInfo = GigTaxWidget;
+		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		7FAB7075E4C46DB0C34F0C1C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D858DD92A60ED13726E30A43 /* GigTaxWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		04A2111B7304D3D9D5AF48A2 /* FederalTaxCalculator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FederalTaxCalculator.swift; path = ../GigTax/Models/FederalTaxCalculator.swift; sourceTree = "<group>"; };
+		05626D91B3C3EBF21E6111C6 /* DriverProfile.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DriverProfile.swift; path = ../GigTax/Models/DriverProfile.swift; sourceTree = "<group>"; };
+		11B6625916AA712088FCDCDB /* SelfEmploymentTaxCalculator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SelfEmploymentTaxCalculator.swift; path = ../GigTax/Models/SelfEmploymentTaxCalculator.swift; sourceTree = "<group>"; };
 		120B04742FF4EBC200C0C833 /* GigTax.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GigTax.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		120B04852FF4EBC400C0C833 /* GigTaxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GigTaxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		120B048F2FF4EBC400C0C833 /* GigTaxUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GigTaxUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2F6AC317B3A9FC426960833D /* Shift.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Shift.swift; path = ../GigTax/Models/Shift.swift; sourceTree = "<group>"; };
+		3AF4BEC6F06ECA4823EA41B2 /* QuarterlyPayment.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = QuarterlyPayment.swift; path = ../GigTax/Models/QuarterlyPayment.swift; sourceTree = "<group>"; };
+		3E6C34298E7216E00D260E3C /* MarylandCountyTax.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MarylandCountyTax.swift; path = ../GigTax/Models/MarylandCountyTax.swift; sourceTree = "<group>"; };
+		4050E46036C2629776FD7A6A /* QuarterlyTaxCalculator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = QuarterlyTaxCalculator.swift; path = ../GigTax/Models/QuarterlyTaxCalculator.swift; sourceTree = "<group>"; };
+		41D3AAFF3804832112942C13 /* MaintenanceScheduleItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MaintenanceScheduleItem.swift; path = ../GigTax/Models/MaintenanceScheduleItem.swift; sourceTree = "<group>"; };
+		4523E2BFA08771DF6842BC46 /* StateTaxCalculator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StateTaxCalculator.swift; path = ../GigTax/Models/StateTaxCalculator.swift; sourceTree = "<group>"; };
+		5EC2CBC88DC73A22E6509ADF /* TaxEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TaxEngine.swift; path = ../GigTax/Models/TaxEngine.swift; sourceTree = "<group>"; };
+		75E9414EA957F6111A52E356 /* Trip.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Trip.swift; path = ../GigTax/Models/Trip.swift; sourceTree = "<group>"; };
+		8B0671B3DF67E815D684B367 /* Enums.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Enums.swift; path = ../GigTax/Models/Enums.swift; sourceTree = "<group>"; };
+		9389BF8648F18ADC9A1E2BA0 /* GigTaxModelContainer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GigTaxModelContainer.swift; path = ../GigTax/Models/GigTaxModelContainer.swift; sourceTree = "<group>"; };
+		A5473C127A80B6B3B8860221 /* Vehicle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Vehicle.swift; path = ../GigTax/Models/Vehicle.swift; sourceTree = "<group>"; };
+		A6BC5AC9CF4BDDDE425CF651 /* GigTaxWidgetBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GigTaxWidgetBundle.swift; sourceTree = "<group>"; };
+		B338293140C0E37EAB02649F /* GigTaxWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GigTaxWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B36F8E388552C610B56A2509 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		BDC2182BC49E1F5238251358 /* RecurringExpense.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RecurringExpense.swift; path = ../GigTax/Models/RecurringExpense.swift; sourceTree = "<group>"; };
+		BE643726CBAB49F2B11D0F00 /* TaxYearSummaryBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TaxYearSummaryBuilder.swift; path = ../GigTax/Models/TaxYearSummaryBuilder.swift; sourceTree = "<group>"; };
+		BF4F64D56519D9D623E6EEB8 /* TaxOwedWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaxOwedWidget.swift; sourceTree = "<group>"; };
+		DA3588C52D186A5A6E3C1786 /* Expense.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Expense.swift; path = ../GigTax/Models/Expense.swift; sourceTree = "<group>"; };
+		E341024C5CA103C2A93B321D /* DeductionMethodCalculator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DeductionMethodCalculator.swift; path = ../GigTax/Models/DeductionMethodCalculator.swift; sourceTree = "<group>"; };
+		E5691A03AEAF3AFF5C11973A /* TodayEarningsWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TodayEarningsWidget.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -50,11 +120,15 @@
 		};
 		120B04882FF4EBC400C0C833 /* GigTaxTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = GigTaxTests;
 			sourceTree = "<group>";
 		};
 		120B04922FF4EBC400C0C833 /* GigTaxUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = GigTaxUITests;
 			sourceTree = "<group>";
 		};
@@ -82,6 +156,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AEA83EBF0183B1EB4A74243A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A0D13DB3808E8FD4A0B6EFE8 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -92,6 +174,8 @@
 				120B04882FF4EBC400C0C833 /* GigTaxTests */,
 				120B04922FF4EBC400C0C833 /* GigTaxUITests */,
 				120B04752FF4EBC200C0C833 /* Products */,
+				4A90828D8AEDFA48079AC19D /* Frameworks */,
+				8348BB81C21381223AA910EF /* GigTaxWidget */,
 			);
 			sourceTree = "<group>";
 		};
@@ -101,13 +185,84 @@
 				120B04742FF4EBC200C0C833 /* GigTax.app */,
 				120B04852FF4EBC400C0C833 /* GigTaxTests.xctest */,
 				120B048F2FF4EBC400C0C833 /* GigTaxUITests.xctest */,
+				B338293140C0E37EAB02649F /* GigTaxWidget.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		2421828A6CCD209A0A0B399D /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				B36F8E388552C610B56A2509 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		4A90828D8AEDFA48079AC19D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2421828A6CCD209A0A0B399D /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		8348BB81C21381223AA910EF /* GigTaxWidget */ = {
+			isa = PBXGroup;
+			children = (
+				83A64DB29964459206D16BF1 /* SharedModels */,
+				A6BC5AC9CF4BDDDE425CF651 /* GigTaxWidgetBundle.swift */,
+				E5691A03AEAF3AFF5C11973A /* TodayEarningsWidget.swift */,
+				BF4F64D56519D9D623E6EEB8 /* TaxOwedWidget.swift */,
+			);
+			name = GigTaxWidget;
+			path = GigTaxWidget;
+			sourceTree = "<group>";
+		};
+		83A64DB29964459206D16BF1 /* SharedModels */ = {
+			isa = PBXGroup;
+			children = (
+				2F6AC317B3A9FC426960833D /* Shift.swift */,
+				75E9414EA957F6111A52E356 /* Trip.swift */,
+				DA3588C52D186A5A6E3C1786 /* Expense.swift */,
+				05626D91B3C3EBF21E6111C6 /* DriverProfile.swift */,
+				A5473C127A80B6B3B8860221 /* Vehicle.swift */,
+				BDC2182BC49E1F5238251358 /* RecurringExpense.swift */,
+				41D3AAFF3804832112942C13 /* MaintenanceScheduleItem.swift */,
+				3AF4BEC6F06ECA4823EA41B2 /* QuarterlyPayment.swift */,
+				8B0671B3DF67E815D684B367 /* Enums.swift */,
+				9389BF8648F18ADC9A1E2BA0 /* GigTaxModelContainer.swift */,
+				BE643726CBAB49F2B11D0F00 /* TaxYearSummaryBuilder.swift */,
+				4050E46036C2629776FD7A6A /* QuarterlyTaxCalculator.swift */,
+				5EC2CBC88DC73A22E6509ADF /* TaxEngine.swift */,
+				04A2111B7304D3D9D5AF48A2 /* FederalTaxCalculator.swift */,
+				11B6625916AA712088FCDCDB /* SelfEmploymentTaxCalculator.swift */,
+				4523E2BFA08771DF6842BC46 /* StateTaxCalculator.swift */,
+				3E6C34298E7216E00D260E3C /* MarylandCountyTax.swift */,
+				E341024C5CA103C2A93B321D /* DeductionMethodCalculator.swift */,
+			);
+			name = SharedModels;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		118E73BAEF1F020F86765D7F /* GigTaxWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 555C9AA3AB2F0EA2D1B77A8A /* Build configuration list for PBXNativeTarget "GigTaxWidget" */;
+			buildPhases = (
+				440EB9383D3C9D22F74FF605 /* Sources */,
+				AEA83EBF0183B1EB4A74243A /* Frameworks */,
+				C4852149590E8368B4E3A04D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GigTaxWidget;
+			productName = GigTaxWidget;
+			productReference = B338293140C0E37EAB02649F /* GigTaxWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		120B04732FF4EBC200C0C833 /* GigTax */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 120B04982FF4EBC400C0C833 /* Build configuration list for PBXNativeTarget "GigTax" */;
@@ -115,17 +270,17 @@
 				120B04702FF4EBC200C0C833 /* Sources */,
 				120B04712FF4EBC200C0C833 /* Frameworks */,
 				120B04722FF4EBC200C0C833 /* Resources */,
+				7FAB7075E4C46DB0C34F0C1C /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				7FA18D252704B63255543EAF /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				120B04762FF4EBC200C0C833 /* GigTax */,
 			);
 			name = GigTax;
-			packageProductDependencies = (
-			);
 			productName = GigTax;
 			productReference = 120B04742FF4EBC200C0C833 /* GigTax.app */;
 			productType = "com.apple.product-type.application";
@@ -147,8 +302,6 @@
 				120B04882FF4EBC400C0C833 /* GigTaxTests */,
 			);
 			name = GigTaxTests;
-			packageProductDependencies = (
-			);
 			productName = GigTaxTests;
 			productReference = 120B04852FF4EBC400C0C833 /* GigTaxTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -170,8 +323,6 @@
 				120B04922FF4EBC400C0C833 /* GigTaxUITests */,
 			);
 			name = GigTaxUITests;
-			packageProductDependencies = (
-			);
 			productName = GigTaxUITests;
 			productReference = 120B048F2FF4EBC400C0C833 /* GigTaxUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -216,6 +367,7 @@
 				120B04732FF4EBC200C0C833 /* GigTax */,
 				120B04842FF4EBC400C0C833 /* GigTaxTests */,
 				120B048E2FF4EBC400C0C833 /* GigTaxUITests */,
+				118E73BAEF1F020F86765D7F /* GigTaxWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -236,6 +388,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		120B048D2FF4EBC400C0C833 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C4852149590E8368B4E3A04D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -266,6 +425,34 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		440EB9383D3C9D22F74FF605 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8FFF5A0E15607482740008CE /* Shift.swift in Sources */,
+				ED355E0254CF1FE096D16E6F /* Trip.swift in Sources */,
+				C3CEAF7F284F032D81E70859 /* Expense.swift in Sources */,
+				A20069C9A96A231CF15258AC /* DriverProfile.swift in Sources */,
+				B3A189580D4A7894C5352ABC /* Vehicle.swift in Sources */,
+				1BF90AE7548E185EC72A0D74 /* RecurringExpense.swift in Sources */,
+				320E243FAA8C4A1355E8ED29 /* MaintenanceScheduleItem.swift in Sources */,
+				6E4AF90E6A56C2B0A7AA57B1 /* QuarterlyPayment.swift in Sources */,
+				87302A075A0C3BC20615A94C /* Enums.swift in Sources */,
+				DD5C8955352F322C6EEA7E13 /* GigTaxModelContainer.swift in Sources */,
+				CC6EFE83896060D493319A6A /* TaxYearSummaryBuilder.swift in Sources */,
+				E8DAEB088C8F547F48FED99E /* QuarterlyTaxCalculator.swift in Sources */,
+				BD669DD64930F744A1C6981D /* TaxEngine.swift in Sources */,
+				5023BA02CA00EE171DAB460C /* FederalTaxCalculator.swift in Sources */,
+				254C18308602C03E1C2F927E /* SelfEmploymentTaxCalculator.swift in Sources */,
+				285D3E8E33E8F22266BFE19B /* StateTaxCalculator.swift in Sources */,
+				33B45536E898B15D2030AE84 /* MarylandCountyTax.swift in Sources */,
+				EFB0461A0BA7BBB951002F20 /* DeductionMethodCalculator.swift in Sources */,
+				88408397CD094AACE5E6D96C /* GigTaxWidgetBundle.swift in Sources */,
+				3C029753D16DCB96B200D9FD /* TodayEarningsWidget.swift in Sources */,
+				144CA9741B5C57AB905AAAC9 /* TaxOwedWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -278,6 +465,12 @@
 			isa = PBXTargetDependency;
 			target = 120B04732FF4EBC200C0C833 /* GigTax */;
 			targetProxy = 120B04902FF4EBC400C0C833 /* PBXContainerItemProxy */;
+		};
+		7FA18D252704B63255543EAF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = GigTaxWidget;
+			target = 118E73BAEF1F020F86765D7F /* GigTaxWidget */;
+			targetProxy = B7AD3D35DF5181EF4EDD8ADB /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -555,6 +748,63 @@
 			};
 			name = Release;
 		};
+		4F6718F469A17E4211FE8D73 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = GigTaxWidget/GigTaxWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = D42535UXVQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GigTaxWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = GigTaxWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.kewani-is-th.GigTax.GigTaxWidget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		C6133076085EA3F591E811DA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = GigTaxWidget/GigTaxWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = D42535UXVQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GigTaxWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = GigTaxWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.kewani-is-th.GigTax.GigTaxWidget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -590,6 +840,15 @@
 			buildConfigurations = (
 				120B04A12FF4EBC400C0C833 /* Debug */,
 				120B04A22FF4EBC400C0C833 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		555C9AA3AB2F0EA2D1B77A8A /* Build configuration list for PBXNativeTarget "GigTaxWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4F6718F469A17E4211FE8D73 /* Release */,
+				C6133076085EA3F591E811DA /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
