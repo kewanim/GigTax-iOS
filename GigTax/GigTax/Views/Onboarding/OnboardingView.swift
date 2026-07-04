@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 @Observable
 final class OnboardingData {
@@ -66,5 +67,9 @@ struct OnboardingView: View {
 
         try? modelContext.save()
         hasCompletedOnboarding = true
+
+        Task {
+            try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
+        }
     }
 }

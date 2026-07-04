@@ -14,6 +14,13 @@ struct SettingsView: View {
         )
     }
 
+    private var notificationsBinding: Binding<Bool> {
+        Binding(
+            get: { driverProfile?.notificationsEnabled ?? true },
+            set: { driverProfile?.notificationsEnabled = $0 }
+        )
+    }
+
     var body: some View {
         NavigationStack {
             List {
@@ -21,6 +28,12 @@ struct SettingsView: View {
                     Toggle("Face ID / Touch ID Lock", isOn: biometricLockBinding)
                 } footer: {
                     Text("Requires biometric authentication (or your device passcode) whenever GigTax returns from the background.")
+                }
+
+                Section {
+                    Toggle("Quarterly Tax Reminders", isOn: notificationsBinding)
+                } footer: {
+                    Text("Reminds you 7 days before and on the day each quarterly estimated payment is due, with the amount owed.")
                 }
 
                 Section {

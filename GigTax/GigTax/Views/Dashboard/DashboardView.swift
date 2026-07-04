@@ -171,6 +171,10 @@ struct DashboardView: View {
                             }
                         }
                     }
+                    .task(id: taxSummary.totalTax) {
+                        let quarters = QuarterlyTaxCalculator.quarters(totalTaxOwed: taxSummary.totalTax, forYear: taxYear)
+                        await QuarterlyNotificationScheduler.scheduleAll(for: quarters, taxYear: taxYear, enabled: driverProfile?.notificationsEnabled ?? true)
+                    }
                 }
             }
             .navigationTitle("Dashboard")
