@@ -1,6 +1,7 @@
 import Foundation
 import CoreLocation
 import SwiftData
+import ActivityKit
 
 @MainActor
 @Observable
@@ -28,6 +29,7 @@ final class LocationService: NSObject {
     private var totalMilesAcc: Double = 0
     private var movingStart: Date?
     private var stationaryStart: Date?
+    private var tripActivity: Activity<TripActivityAttributes>?
 
     // ~5 mph and ~2 mph in m/s
     private let startSpeedMS: Double = 2.2
@@ -133,6 +135,7 @@ final class LocationService: NSObject {
                 if mph >= 45 { hwyMilesAcc += miles } else { cityMilesAcc += miles }
                 totalMilesAcc += miles
                 currentTripMiles = totalMilesAcc
+                updateTripActivity()
             }
             if speed < stopSpeedMS {
                 if stationaryStart == nil { stationaryStart = loc.timestamp }
@@ -155,9 +158,40 @@ final class LocationService: NSObject {
         cityMilesAcc = 0; hwyMilesAcc = 0; totalMilesAcc = 0
         currentTripMiles = 0; stationaryStart = nil
         enterActiveMode(accuracy: kCLLocationAccuracyBest, distanceFilter: 10)
+        startTripActivity(at: loc.timestamp)
+    }
+
+    /// Skips real ActivityKit calls under XCTest — LocationServiceTests
+    /// synthesizes many location updates per test, and each one calling into
+    /// the live ActivityKit/system service added ~0.6s per test versus the
+    /// prior ~0.15s. Same reasoning as the CloudKit test-isolation fix in
+    /// GigTaxModelContainer: tests shouldn't depend on real system services.
+    private var isRunningUnderTest: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
+
+    private func startTripActivity(at startDate: Date) {
+        guard !isRunningUnderTest, ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+        let attributes = TripActivityAttributes(startDate: startDate)
+        let content = TripActivityAttributes.ContentState(miles: 0, estimatedFuelCost: 0)
+        tripActivity = try? Activity.request(attributes: attributes, content: .init(state: content, staleDate: nil))
+    }
+
+    private func updateTripActivity() {
+        guard let tripActivity else { return }
+        let gallons = (cityMPG > 0 ? cityMilesAcc / cityMPG : 0) + (highwayMPG > 0 ? hwyMilesAcc / highwayMPG : 0)
+        let content = TripActivityAttributes.ContentState(miles: totalMilesAcc, estimatedFuelCost: gallons * gasPrice)
+        Task { await tripActivity.update(.init(state: content, staleDate: nil)) }
+    }
+
+    private func endTripActivity() {
+        guard let tripActivity else { return }
+        Task { await tripActivity.end(nil, dismissalPolicy: .immediate) }
+        self.tripActivity = nil
     }
 
     private func endTrip(at loc: CLLocation) {
+        endTripActivity()
         guard let start = currentTripStart, totalMilesAcc > 0.1 else {
             resetState()
             enterLowPowerMode()
