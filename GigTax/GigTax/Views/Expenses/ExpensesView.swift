@@ -121,6 +121,7 @@ struct ExpensesView: View {
                         Image(systemName: "plus")
                     }
                     .accessibilityIdentifier("addExpenseButton")
+                    .accessibilityLabel("Add Expense")
                 }
             }
             .sheet(isPresented: $showManualEntry) {
@@ -135,6 +136,7 @@ struct ExpensesView: View {
             Spacer()
             Text(total, format: .currency(code: "USD")).textCase(nil)
         }
+        .accessibilityElement(children: .combine)
     }
 
     private var groupedByMonth: [(month: Date, expenses: [Expense])] {
@@ -179,6 +181,7 @@ private struct ExpenseRow: View {
             }
         }
         .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
     }
 }
 

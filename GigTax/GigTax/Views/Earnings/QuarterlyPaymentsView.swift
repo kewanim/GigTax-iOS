@@ -70,6 +70,7 @@ struct QuarterlyPaymentsView: View {
                     Image(systemName: "plus")
                 }
                 .accessibilityIdentifier("addQuarterlyPaymentButton")
+                .accessibilityLabel("Add Payment")
             }
         }
         .sheet(isPresented: $showAddPayment) {
@@ -94,6 +95,7 @@ private struct QuarterlyDueRow: View {
                 Text(quarter.dueDate, style: .date).font(.caption2).foregroundStyle(.secondary)
             }
         }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -113,6 +115,7 @@ private struct QuarterlyPaymentRow: View {
             Text(payment.amount, format: .currency(code: "USD")).fontWeight(.semibold)
         }
         .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
     }
 }
 

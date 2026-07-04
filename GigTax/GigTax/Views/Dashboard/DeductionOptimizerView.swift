@@ -124,8 +124,11 @@ private struct MethodHeader: View {
             Text(title).fontWeight(.bold)
             if isRecommended {
                 Image(systemName: "star.fill").font(.caption2).foregroundStyle(.yellow)
+                    .accessibilityHidden(true)
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(isRecommended ? "\(title), recommended" : title)
     }
 }
 
@@ -135,6 +138,11 @@ private struct BreakevenChart: View {
 
     private var maxMiles: Double {
         max(breakeven.breakevenMiles, breakeven.currentBusinessMiles) * 1.4
+    }
+
+    private var accessibilitySummary: String {
+        let comparisonWord = breakeven.isCurrentlyAboveBreakeven ? "above" : "below"
+        return "Breakeven at \(Int(breakeven.breakevenMiles)) business miles. You're currently at \(Int(breakeven.currentBusinessMiles)) miles, \(comparisonWord) breakeven."
     }
 
     var body: some View {
@@ -165,6 +173,9 @@ private struct BreakevenChart: View {
                     .symbolSize(100)
             }
             .frame(height: 200)
+            .accessibilityElement()
+            .accessibilityLabel("Breakeven mileage chart")
+            .accessibilityValue(accessibilitySummary)
         }
         .padding(.vertical, 4)
     }

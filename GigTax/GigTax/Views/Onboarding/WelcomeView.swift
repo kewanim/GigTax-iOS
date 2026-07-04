@@ -13,8 +13,9 @@ struct WelcomeView: View {
                         .fill(Color.accentColor.opacity(0.12))
                         .frame(width: 120, height: 120)
                     Image(systemName: "car.fill")
-                        .font(.system(size: 52))
+                        .font(.largeTitle)
                         .foregroundStyle(Color.accentColor)
+                        .accessibilityHidden(true)
                 }
 
                 VStack(spacing: 12) {
@@ -76,6 +77,7 @@ struct WelcomeView: View {
             }
             Spacer()
         }
+        .accessibilityElement(children: .combine)
     }
 }
 

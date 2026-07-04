@@ -32,6 +32,7 @@ struct RecurringExpensesView: View {
                 Button { showAdd = true } label: {
                     Image(systemName: "plus")
                 }
+                .accessibilityLabel("Add Recurring Expense")
             }
         }
         .sheet(isPresented: $showAdd) {
@@ -64,6 +65,7 @@ private struct RecurringExpenseRow: View {
             }
         }
         .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
     }
 }
 

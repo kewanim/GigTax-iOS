@@ -115,6 +115,7 @@ struct EarningsImportView: View {
                                         .clipShape(Capsule())
                                 }
                             }
+                            .accessibilityElement(children: .combine)
                         }
                     }
 
