@@ -3,6 +3,7 @@ import SwiftData
 
 @Model
 final class DriverProfile {
+    var driverName: String?  // shown on IRS-facing exports (mileage log PDF); optional so existing profiles migrate cleanly
     var filingStatusRaw: String
     var state: String
     var county: String

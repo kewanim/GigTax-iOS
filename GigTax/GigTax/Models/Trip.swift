@@ -20,6 +20,8 @@ final class Trip {
     var businessPurpose: String
     var isManualEntry: Bool
     var taxYear: Int
+    var startAddress: String?  // reverse-geocoded, cached once resolved; nil until resolved or if geocoding fails
+    var endAddress: String?
 
     var tripType: TripType {
         get { TripType(rawValue: tripTypeRaw) ?? .unknown }
