@@ -114,6 +114,9 @@ struct DashboardView: View {
                             NavigationLink("Vehicle Depreciation") {
                                 VehicleDepreciationView(taxYear: taxYear)
                             }
+                            NavigationLink("Retirement Contributions") {
+                                RetirementContributionView(taxYear: taxYear)
+                            }
                         }
 
                         Section {
