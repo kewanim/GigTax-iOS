@@ -5,31 +5,50 @@ struct ContentView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @Environment(\.modelContext) private var modelContext
     @Environment(LocationService.self) private var locationService
+    @Environment(BiometricLockService.self) private var lockService
+    @Environment(\.scenePhase) private var scenePhase
 
     @Query private var vehicles: [Vehicle]
+    @Query private var driverProfiles: [DriverProfile]
+
+    private var biometricLockEnabled: Bool {
+        driverProfiles.first?.biometricLockEnabled ?? false
+    }
 
     var body: some View {
         if hasCompletedOnboarding {
-            TabView {
-                DashboardView()
-                    .tabItem { Label("Dashboard", systemImage: "chart.bar.fill") }
-                TripsView()
-                    .tabItem { Label("Trips", systemImage: "location.fill") }
-                EarningsView()
-                    .tabItem { Label("Earnings", systemImage: "dollarsign.circle.fill") }
-                ExpensesView()
-                    .tabItem { Label("Expenses", systemImage: "receipt.fill") }
-                SettingsView()
-                    .tabItem { Label("Settings", systemImage: "gearshape.fill") }
-            }
-            .task {
-                locationService.modelContext = modelContext
-                if let v = vehicles.first {
-                    locationService.cityMPG    = v.cityMPG
-                    locationService.highwayMPG = v.highwayMPG
-                    locationService.vehicle    = v
+            ZStack {
+                TabView {
+                    DashboardView()
+                        .tabItem { Label("Dashboard", systemImage: "chart.bar.fill") }
+                    TripsView()
+                        .tabItem { Label("Trips", systemImage: "location.fill") }
+                    EarningsView()
+                        .tabItem { Label("Earnings", systemImage: "dollarsign.circle.fill") }
+                    ExpensesView()
+                        .tabItem { Label("Expenses", systemImage: "receipt.fill") }
+                    SettingsView()
+                        .tabItem { Label("Settings", systemImage: "gearshape.fill") }
                 }
-                locationService.startMonitoring()
+                .task {
+                    locationService.modelContext = modelContext
+                    if let v = vehicles.first {
+                        locationService.cityMPG    = v.cityMPG
+                        locationService.highwayMPG = v.highwayMPG
+                        locationService.vehicle    = v
+                    }
+                    locationService.startMonitoring()
+                }
+
+                if lockService.isLocked {
+                    LockScreenView(lockService: lockService)
+                        .transition(.opacity)
+                }
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .background, biometricLockEnabled {
+                    lockService.lock()
+                }
             }
         } else {
             OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
@@ -40,4 +59,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environment(LocationService())
+        .environment(BiometricLockService())
 }

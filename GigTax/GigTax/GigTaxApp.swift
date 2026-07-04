@@ -11,6 +11,7 @@ import SwiftData
 @main
 struct GigTaxApp: App {
     @State private var locationService = LocationService()
+    @State private var biometricLockService = BiometricLockService()
     @Environment(\.scenePhase) private var scenePhase
 
     var sharedModelContainer: ModelContainer = {
@@ -53,6 +54,7 @@ struct GigTaxApp: App {
         WindowGroup {
             ContentView()
                 .environment(locationService)
+                .environment(biometricLockService)
         }
         .modelContainer(sharedModelContainer)
         .onChange(of: scenePhase) { _, newPhase in
