@@ -9,6 +9,19 @@ struct TripsView: View {
     var body: some View {
         NavigationStack {
             List {
+                Section {
+                    NavigationLink {
+                        MileageLogView(taxYear: Calendar.current.component(.year, from: .now))
+                    } label: {
+                        Label("Mileage Log", systemImage: "list.bullet.rectangle")
+                    }
+                    NavigationLink {
+                        AuditShieldView()
+                    } label: {
+                        Label("Audit Shield", systemImage: "checkmark.shield")
+                    }
+                }
+
                 if locationService.isTracking {
                     Section {
                         ActiveTripBanner(service: locationService)
