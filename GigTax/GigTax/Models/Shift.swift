@@ -16,6 +16,7 @@ final class Shift {
     var linkedTripID: UUID?
     var importedMiles: Double?  // delivery miles reported by the platform CSV, if present
     var lastModified: Date?  // set when a driver edits a shift after creation (e.g. late tips)
+    var screenshotImagePath: String?  // original earnings screenshot, if imported via OCR — audit trail
 
     var platform: Platform {
         get { Platform(rawValue: platformRaw) ?? .other }

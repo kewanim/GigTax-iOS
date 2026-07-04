@@ -26,6 +26,7 @@ private enum EarningsPeriod: String, CaseIterable {
 struct EarningsView: View {
     @Query(sort: \Shift.date, order: .reverse) private var shifts: [Shift]
     @State private var showImport = false
+    @State private var showScreenshotImport = false
     @State private var showManualEntry = false
     @State private var period = EarningsPeriod.thisMonth
 
@@ -113,6 +114,9 @@ struct EarningsView: View {
                         Button { showImport = true } label: {
                             Label("Import CSV", systemImage: "square.and.arrow.down")
                         }
+                        Button { showScreenshotImport = true } label: {
+                            Label("Import Screenshot", systemImage: "photo.badge.plus")
+                        }
                         Button { showManualEntry = true } label: {
                             Label("Log Shift Manually", systemImage: "square.and.pencil")
                         }
@@ -125,6 +129,9 @@ struct EarningsView: View {
             }
             .sheet(isPresented: $showImport) {
                 EarningsImportView()
+            }
+            .sheet(isPresented: $showScreenshotImport) {
+                EarningsScreenshotImportView()
             }
             .sheet(isPresented: $showManualEntry) {
                 ManualShiftEntryView()
