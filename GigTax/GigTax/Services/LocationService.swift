@@ -48,6 +48,17 @@ final class LocationService: NSObject {
     private let evaluationWindow: TimeInterval = 120
     private let staleTrackingInterval: TimeInterval = 3600
 
+    // MARK: - Stop-zone geofence
+    // Significant-location-change alone is documented by Apple as slow —
+    // often minutes — to notice the device has started moving again after
+    // being still, which meant real driving between stops could go entirely
+    // untracked. A geofence around wherever a trip actually ended delivers a
+    // near-instant exit callback the moment the driver actually leaves, so
+    // it's used as the primary "wake up and re-evaluate" trigger, with
+    // significant-change kept running in parallel as a fallback.
+    private static let stopZoneIdentifier = "gigtax.stopZone"
+    private let stopZoneRadius: CLLocationDistance = 150
+
     override init() {
         super.init()
         manager.delegate = self
@@ -78,10 +89,17 @@ final class LocationService: NSObject {
 
     // MARK: - Power mode transitions
 
-    private func enterLowPowerMode() {
+    /// - Parameter anchor: the last known location, if any — used to arm a
+    ///   stop-zone geofence there so leaving it wakes tracking back up almost
+    ///   immediately, rather than waiting on significant-change alone.
+    private func enterLowPowerMode(anchor: CLLocation? = nil) {
         powerMode = .lowPower
         evaluationTask?.cancel()
         manager.stopUpdatingLocation()
+        disarmStopZone()
+        if let anchor {
+            armStopZone(around: anchor)
+        }
         if CLLocationManager.significantLocationChangeMonitoringAvailable() {
             manager.startMonitoringSignificantLocationChanges()
         } else {
@@ -91,9 +109,35 @@ final class LocationService: NSObject {
 
     private func enterActiveMode(accuracy: CLLocationAccuracy, distanceFilter: CLLocationDistance) {
         manager.stopMonitoringSignificantLocationChanges()
+        disarmStopZone()
         manager.desiredAccuracy = accuracy
         manager.distanceFilter  = distanceFilter
         manager.startUpdatingLocation()
+    }
+
+    private func armStopZone(around loc: CLLocation) {
+        guard CLLocationManager.isMonitoringAvailable(for: CLCircularRegion.self) else { return }
+        let region = CLCircularRegion(center: loc.coordinate, radius: stopZoneRadius, identifier: Self.stopZoneIdentifier)
+        region.notifyOnEntry = false
+        region.notifyOnExit = true
+        manager.startMonitoring(for: region)
+    }
+
+    private func disarmStopZone() {
+        for region in manager.monitoredRegions where region.identifier == Self.stopZoneIdentifier {
+            manager.stopMonitoring(for: region)
+        }
+    }
+
+    /// Region-exit fired first (the common, fast case) — jump straight to
+    /// evaluating a possible trip start, same as the first location update
+    /// would have done under the old significant-change-only flow.
+    private func handleStopZoneExit() {
+        guard powerMode == .lowPower, !isTracking else { return }
+        disarmStopZone()
+        powerMode = .evaluating
+        enterActiveMode(accuracy: kCLLocationAccuracyHundredMeters, distanceFilter: 50)
+        scheduleEvaluationTimeout()
     }
 
     private func scheduleEvaluationTimeout() {
@@ -103,7 +147,7 @@ final class LocationService: NSObject {
             try? await Task.sleep(for: .seconds(window))
             guard let self, !Task.isCancelled else { return }
             if self.powerMode == .evaluating && !self.isTracking {
-                self.enterLowPowerMode()
+                self.enterLowPowerMode(anchor: self.lastLoc)
             }
         }
     }
@@ -194,7 +238,7 @@ final class LocationService: NSObject {
         endTripActivity()
         guard let start = currentTripStart, totalMilesAcc > 0.1 else {
             resetState()
-            enterLowPowerMode()
+            enterLowPowerMode(anchor: loc)
             return
         }
         let gallons  = (cityMPG  > 0 ? cityMilesAcc  / cityMPG  : 0)
@@ -228,7 +272,7 @@ final class LocationService: NSObject {
         }
 
         resetState()
-        enterLowPowerMode()
+        enterLowPowerMode(anchor: loc)
     }
 
     private func resetState() {
@@ -250,4 +294,13 @@ extension LocationService: CLLocationManagerDelegate {
         let status = manager.authorizationStatus
         Task { @MainActor [weak self] in self?.authorizationStatus = status }
     }
+
+    nonisolated func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
+        guard region.identifier == LocationService.stopZoneIdentifier else { return }
+        Task { @MainActor [weak self] in self?.handleStopZoneExit() }
+    }
+
+    // No explicit handling needed — significant-location-change monitoring
+    // is already running in parallel as the fallback wake-up path.
+    nonisolated func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error) {}
 }
