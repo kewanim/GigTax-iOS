@@ -14,6 +14,8 @@ import CoreLocation
 /// the deployment target actually moves past iOS 26.
 enum TripGeocoder {
     static func resolveAddressesIfNeeded(for trip: Trip, geocoder: CLGeocoder = CLGeocoder()) async {
+        guard !trip.didAttemptGeocode else { return }
+        trip.didAttemptGeocode = true
         if trip.startAddress == nil {
             trip.startAddress = await reverseGeocode(latitude: trip.startLatitude, longitude: trip.startLongitude, geocoder: geocoder)
         }

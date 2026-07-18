@@ -9,6 +9,7 @@ final class ExpensesUITests: XCTestCase {
     @MainActor
     func testLogExpenseAppearsInExpensesList() throws {
         let app = XCUIApplication()
+        app.launchArguments = ["-uiTestReset"]
         app.launch()
 
         let expensesTab = app.tabBars.buttons["Expenses"]

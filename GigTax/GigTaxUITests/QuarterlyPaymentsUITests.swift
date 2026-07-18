@@ -9,6 +9,7 @@ final class QuarterlyPaymentsUITests: XCTestCase {
     @MainActor
     func testLogPaymentAppearsInQuarterlyPaymentsList() throws {
         let app = XCUIApplication()
+        app.launchArguments = ["-uiTestReset"]
         app.launch()
 
         let earningsTab = app.tabBars.buttons["Earnings"]
@@ -31,6 +32,8 @@ final class QuarterlyPaymentsUITests: XCTestCase {
 
         app.navigationBars["Log Payment"].buttons["Save"].tap()
 
-        XCTAssertTrue(app.staticTexts["$1,500.00"].waitForExistence(timeout: 5))
+        // "Paid So Far" row is grouped into one VoiceOver element (accessibilityElement(children: .combine)),
+        // so the amount reads as part of the combined label rather than as its own static text.
+        XCTAssertTrue(app.staticTexts["Paid So Far, $1,500.00"].waitForExistence(timeout: 5))
     }
 }

@@ -26,9 +26,7 @@ struct MaintenanceScheduleView: View {
             } else {
                 ForEach(items) { item in
                     Button {
-                        if item.isDue(estimatedCurrentOdometer: estimatedOdometer) {
-                            loggingItem = item
-                        }
+                        loggingItem = item
                     } label: {
                         MaintenanceRow(item: item, estimatedOdometer: estimatedOdometer)
                     }
