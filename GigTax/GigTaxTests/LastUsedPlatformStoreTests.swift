@@ -2,6 +2,7 @@ import Testing
 import Foundation
 @testable import GigTax
 
+@Suite(.serialized)
 struct LastUsedPlatformStoreTests {
 
     @Test func recordsAndReadsBackThePlatform() {

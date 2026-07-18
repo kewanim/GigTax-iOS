@@ -9,6 +9,7 @@ final class AuditShieldUITests: XCTestCase {
     @MainActor
     func testMileageLogAndAuditShieldAreReachableFromTrips() throws {
         let app = XCUIApplication()
+        app.launchArguments = ["-uiTestReset"]
         app.launch()
 
         let tripsTab = app.tabBars.buttons["Trips"]

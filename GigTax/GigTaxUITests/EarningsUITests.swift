@@ -9,6 +9,7 @@ final class EarningsUITests: XCTestCase {
     @MainActor
     func testLogShiftManuallyAppearsInEarningsList() throws {
         let app = XCUIApplication()
+        app.launchArguments = ["-uiTestReset"]
         app.launch()
 
         let earningsTab = app.tabBars.buttons["Earnings"]
