@@ -8,12 +8,15 @@ enum RecurringFrequency: String, CaseIterable, Codable {
 
 @Model
 final class RecurringExpense {
-    var id: UUID
-    var categoryRaw: String
-    var amount: Double
-    var frequencyRaw: String
-    var startDate: Date
-    var isActive: Bool
+    // Every stored property below needs an inline default (not just one set in
+    // init) — CloudKit's schema validation rejects any non-optional attribute
+    // without one, and real values are always overwritten by init() anyway.
+    var id: UUID = UUID()
+    var categoryRaw: String = ExpenseCategory.other.rawValue
+    var amount: Double = 0
+    var frequencyRaw: String = RecurringFrequency.monthly.rawValue
+    var startDate: Date = Date.now
+    var isActive: Bool = true
 
     var category: ExpenseCategory {
         get { ExpenseCategory(rawValue: categoryRaw) ?? .other }
