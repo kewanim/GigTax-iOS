@@ -117,4 +117,93 @@ struct EarningsScreenshotParserTests {
         #expect(result.grossIncome != nil)
         #expect(abs(result.grossIncome! - 50.00) < 0.01)
     }
+
+    // Actual Vision OCR output from a real Lyft "Weekly breakdown" screenshot
+    // — same layout family as `lyftLines` above (different week's numbers,
+    // "Adjustments" row instead of "Tolls & other pass-throughs"), captured
+    // via the same diagnostic script against the real source image.
+    private let lyftWeeklyBreakdownLines = [
+        "2:56", "Weekly breakdown", "<",
+        "Jul 13 - Jul 19",
+        "$215.07",
+        "14", "6 hr 39 min", "85.43 mi", "rides", "booked", "booked",
+        "$29.28 per booked hr",
+        "Excluding tips",
+        "Earnings summary",
+        "$289.71 G", "Passenger payments",
+        "-$59.64", "Est. Lyft fee",
+        "-$35.30 0", "Est. insurance, taxes,", "gov't fees",
+        "$20.30 V", "Tips",
+        "-$3.50 V", "Adjustments",
+        "$211.57 V", "Total earnings",
+        "Track the Lyft fee for July",
+        "The Lyft fee is capped at 30% of passenger",
+        "payments each month. If the Lyft fee is ever",
+        "above 30% when the month ends, you'll get an",
+        "earnings adjustment.",
+        "Tap to track →",
+    ]
+
+    // Actual Vision OCR output from a real Uber earnings home-tab screenshot
+    // — the daily-bar-chart weekly summary card, a different screen from
+    // `uberLines` above (that one is the "Customer fare breakdown" detail
+    // view with a "Your earnings" line; this one has neither "Your earnings"
+    // nor "Total earnings" anywhere — its only total is an unlabeled number
+    // that reconciles to a "Breakdown" section further down the screen).
+    private let uberWeeklySummaryLines = [
+        "2:55", "1| 9", "Jul 13 - Jul 20 v",
+        "$604.08",
+        "$210.12",
+        "14", "16", "19", "17", "13", "15", "18",
+        "Mon", "Tue", "Thu", "Fri", "Sun", "Wed", "Sat",
+        "Stats",
+        "Online", "Trips", "25 h 25 m", "43", "Points", "85",
+        "How we calculate stats",
+        "Breakdown",
+        "$523.96", "Net Fare",
+        "V", "Promotions", "$25.12",
+        "$55.00", "Tip",
+        "=", "Home", "Discover", "Menu", "Inbox", "Earnings",
+    ]
+
+    @Test func uberWeeklySummaryGrossIncomeComesFromBreakdownSection() {
+        // Big top number $604.08 = Net Fare $523.96 + Promotions $25.12 + Tip $55.00.
+        // grossIncome should be everything in Breakdown except the Tip line,
+        // so it reconciles with tips to the full $604.08 without double-counting.
+        let result = EarningsScreenshotParser.parse(lines: uberWeeklySummaryLines)
+        #expect(result.tips != nil)
+        #expect(abs(result.tips! - 55.00) < 0.01)
+        #expect(result.grossIncome != nil)
+        #expect(abs(result.grossIncome! - (523.96 + 25.12)) < 0.01)
+        #expect(abs((result.grossIncome! + result.tips!) - 604.08) < 0.01)
+    }
+
+    @Test func uberWeeklySummaryParsesHoursFromAbbreviatedHMFormat() {
+        let result = EarningsScreenshotParser.parse(lines: uberWeeklySummaryLines)
+        #expect(result.hoursWorked != nil)
+        // "25 h 25 m" = 25 + 25/60
+        #expect(abs(result.hoursWorked! - (25 + 25.0 / 60.0)) < 0.01)
+    }
+
+    @Test func uberWeeklySummaryHasNoMileageOnScreenAtAll() {
+        // This Uber screen genuinely never shows mileage anywhere — miles
+        // should come back nil so the driver gets the estimate-from-earnings
+        // fallback prompt rather than a wrong guess.
+        let result = EarningsScreenshotParser.parse(lines: uberWeeklySummaryLines)
+        #expect(result.miles == nil)
+    }
+
+    @Test func lyftWeeklyBreakdownParsesMileageDirectlyFromScreenshot() {
+        let result = EarningsScreenshotParser.parse(lines: lyftWeeklyBreakdownLines)
+        #expect(result.miles != nil)
+        #expect(abs(result.miles! - 85.43) < 0.01)
+    }
+
+    @Test func lyftWeeklyBreakdownGrossIncomeExcludesTipsAndAdjustments() {
+        let result = EarningsScreenshotParser.parse(lines: lyftWeeklyBreakdownLines)
+        #expect(result.tips != nil)
+        #expect(abs(result.tips! - 20.30) < 0.01)
+        #expect(result.grossIncome != nil)
+        #expect(abs(result.grossIncome! - (211.57 - 20.30)) < 0.01)
+    }
 }
