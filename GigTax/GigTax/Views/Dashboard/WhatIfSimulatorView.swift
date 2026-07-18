@@ -6,6 +6,7 @@ struct WhatIfSimulatorView: View {
     @Query private var trips: [Trip]
     @Query private var expenses: [Expense]
     @Query private var driverProfiles: [DriverProfile]
+    @Query private var recurringExpenses: [RecurringExpense]
 
     let taxYear: Int
 
@@ -14,7 +15,7 @@ struct WhatIfSimulatorView: View {
     private var driverProfile: DriverProfile? { driverProfiles.first }
 
     private var result: WhatIfSimulator.Result {
-        WhatIfSimulator.simulate(shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, extraMiles: extraMiles)
+        WhatIfSimulator.simulate(shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, extraMiles: extraMiles, recurringExpenses: recurringExpenses)
     }
 
     var body: some View {

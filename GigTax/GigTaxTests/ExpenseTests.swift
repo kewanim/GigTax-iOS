@@ -43,7 +43,7 @@ struct ExpenseTests {
 
         let recurring = RecurringExpense(category: .phone, amount: 85, frequency: .monthly, startDate: startOfYear.addingTimeInterval(-86_400 * 400))
         let expected = (85.0 * 12) * (Double(daysElapsed) / 365.0)
-        #expect(abs(recurring.proRatedTotalToDate - expected) < 0.01)
+        #expect(abs(recurring.proRatedTotal(forTaxYear: year) - expected) < 0.01)
     }
 
     @Test func recurringExpenseProRatesFromItsOwnStartDateWhenStartedThisYear() {
@@ -55,12 +55,17 @@ struct ExpenseTests {
         }
         let recurring = RecurringExpense(category: .maintenance, amount: 40, frequency: .monthly, startDate: midYearStart)
         let expected = (40.0 * 12) * (10.0 / 365.0)
-        #expect(abs(recurring.proRatedTotalToDate - expected) < 0.01)
+        #expect(abs(recurring.proRatedTotal(forTaxYear: calendar.component(.year, from: now)) - expected) < 0.01)
     }
 
-    @Test func inactiveRecurringExpenseContributesNothing() {
+    // isActive alone no longer gates proRatedTotal (see RecurringExpenseTests
+    // for the full rationale) — an inactive item still counts for whatever
+    // period elapsed before its endDate, which is what actually governs it now.
+    @Test func inactiveRecurringExpenseWithNoEndDateIsGovernedByDatesNotIsActive() {
         let recurring = RecurringExpense(category: .other, amount: 100, frequency: .yearly, startDate: .now, isActive: false)
-        #expect(recurring.proRatedTotalToDate == 0)
+        // Started literally "now" with no elapsed days yet — zero for the
+        // right reason (no time has passed), not because it's inactive.
+        #expect(recurring.proRatedTotal(forTaxYear: Calendar.current.component(.year, from: .now)) == 0)
     }
 
     @Test func yearlyFrequencyDoesNotMultiplyByTwelve() {

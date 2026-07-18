@@ -7,6 +7,7 @@ struct ScheduleCSummaryView: View {
     @Query private var expenses: [Expense]
     @Query private var driverProfiles: [DriverProfile]
     @Query private var vehicles: [Vehicle]
+    @Query private var recurringExpenses: [RecurringExpense]
 
     let taxYear: Int
 
@@ -20,9 +21,9 @@ struct ScheduleCSummaryView: View {
         let yearTrips = trips.filter { $0.taxYear == taxYear }
         let yearExpenses = expenses.filter { $0.taxYear == taxYear }
         let phoneBusinessPercent = driverProfile?.phoneBusinessPercent ?? 100
-        let preliminary = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent)
+        let preliminary = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent, recurringExpenses: recurringExpenses, taxYear: taxYear)
         let depreciation = TaxYearSummaryBuilder.depreciationDeduction(vehicle: vehicles.first, businessUsePercent: preliminary.businessUsePercent, taxYear: taxYear)
-        return DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent, depreciationDeduction: depreciation)
+        return DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent, depreciationDeduction: depreciation, recurringExpenses: recurringExpenses, taxYear: taxYear)
     }
 
     private var summary: ScheduleCMapper.Summary {
