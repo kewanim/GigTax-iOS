@@ -12,6 +12,7 @@ import SwiftData
 struct GigTaxApp: App {
     @State private var locationService = LocationService()
     @State private var biometricLockService = BiometricLockService()
+    @State private var cloudSyncStatusService = CloudSyncStatusService()
     @Environment(\.scenePhase) private var scenePhase
 
     var sharedModelContainer: ModelContainer { GigTaxModelContainer.shared }
@@ -56,6 +57,7 @@ struct GigTaxApp: App {
             ContentView()
                 .environment(locationService)
                 .environment(biometricLockService)
+                .environment(cloudSyncStatusService)
                 .onAppear {
                     UIApplication.shared.addKeyboardDismissRecognizer()
                 }

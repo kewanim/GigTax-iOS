@@ -3,21 +3,24 @@ import SwiftData
 
 @Model
 final class DriverProfile {
+    // Every stored property below needs an inline default (not just one set in
+    // init) — CloudKit's schema validation rejects any non-optional attribute
+    // without one, and real values are always overwritten by init() anyway.
     var driverName: String?  // shown on IRS-facing exports (mileage log PDF); optional so existing profiles migrate cleanly
-    var filingStatusRaw: String
-    var state: String
-    var county: String
+    var filingStatusRaw: String = FilingStatus.single.rawValue
+    var state: String = "MD"
+    var county: String = "Montgomery"
     var weeklyGoal: Double?
     var monthlyGoal: Double?
-    var phoneBusinessPercent: Double   // 0–100
-    var phoneMonthlyBill: Double
-    var cleaningMonthly: Double
-    var maintenanceMonthly: Double
-    var phoneYearly: Double
-    var taxSavingsPercent: Double      // % of income to set aside for taxes
-    var preferredDeductionMethodRaw: String
-    var biometricLockEnabled: Bool
-    var notificationsEnabled: Bool
+    var phoneBusinessPercent: Double = 80   // 0–100
+    var phoneMonthlyBill: Double = 85
+    var cleaningMonthly: Double = 30
+    var maintenanceMonthly: Double = 40
+    var phoneYearly: Double = 1_350
+    var taxSavingsPercent: Double = 25      // % of income to set aside for taxes
+    var preferredDeductionMethodRaw: String = DeductionMethod.standard.rawValue
+    var biometricLockEnabled: Bool = false
+    var notificationsEnabled: Bool = true
 
     var filingStatus: FilingStatus {
         get { FilingStatus(rawValue: filingStatusRaw) ?? .single }
