@@ -7,6 +7,7 @@ struct RetirementContributionView: View {
     @Query private var expenses: [Expense]
     @Query private var driverProfiles: [DriverProfile]
     @Query private var vehicles: [Vehicle]
+    @Query private var recurringExpenses: [RecurringExpense]
 
     let taxYear: Int
 
@@ -16,7 +17,7 @@ struct RetirementContributionView: View {
 
     private var netProfit: Double {
         TaxYearSummaryBuilder.build(
-            shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, vehicle: vehicles.first
+            shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, vehicle: vehicles.first, recurringExpenses: recurringExpenses
         ).netProfit
     }
 
@@ -26,7 +27,7 @@ struct RetirementContributionView: View {
 
     private var marginalRate: Double {
         TaxYearSummaryBuilder.build(
-            shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, vehicle: vehicles.first
+            shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, vehicle: vehicles.first, recurringExpenses: recurringExpenses
         ).marginalRate
     }
 

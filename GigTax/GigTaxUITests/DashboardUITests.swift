@@ -9,6 +9,7 @@ final class DashboardUITests: XCTestCase {
     @MainActor
     func testDashboardShowsEmptyStateThenPopulatesAfterLoggingAShift() throws {
         let app = XCUIApplication()
+        app.launchArguments = ["-uiTestReset"]
         app.launch()
 
         let dashboardTab = app.tabBars.buttons["Dashboard"]

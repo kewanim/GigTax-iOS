@@ -9,15 +9,15 @@ final class Vehicle {
     // migration fails with "missing attribute values on mandatory destination
     // attribute" for anyone with existing data.
     var id: UUID = UUID()
-    var make: String
-    var model: String
-    var year: Int
-    var trim: String
-    var fuelType: String
-    var cityMPG: Double
-    var highwayMPG: Double
-    var tankSizeGallons: Double
-    var startingOdometer: Double
+    var make: String = ""
+    var model: String = ""
+    var year: Int = Calendar.current.component(.year, from: .now)
+    var trim: String = ""
+    var fuelType: String = "Gasoline"
+    var cityMPG: Double = 0
+    var highwayMPG: Double = 0
+    var tankSizeGallons: Double = 0
+    var startingOdometer: Double = 0
     var purchasePrice: Double?
     var placedInServiceDate: Date?     // for Section 179 / MACRS depreciation
     var useBonusDepreciation: Bool = true  // affects both the bonus % and the §280F Year 1 luxury-auto cap

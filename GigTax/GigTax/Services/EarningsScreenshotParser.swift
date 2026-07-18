@@ -71,14 +71,20 @@ enum EarningsScreenshotParser {
             ?? firstAmount(afterKeyword: "tips", in: lines)
             ?? firstAmount(afterKeyword: "tip", in: lines)
 
-        // Prefer "Your earnings" (Uber's phrasing) — it already excludes tips.
-        // Fall back to "Total earnings" (Lyft's phrasing), which includes
-        // tips, so subtract them back out to avoid Shift double-counting
-        // gross + tips.
+        // Prefer "Your earnings" (Uber's per-shift phrasing) — it already
+        // excludes tips. Fall back to "Total earnings" (Lyft's phrasing),
+        // which includes tips, so subtract them back out to avoid Shift
+        // double-counting gross + tips. Uber's home-tab weekly summary card
+        // (bar chart + Stats grid) has neither line — its only total is an
+        // unlabeled big number that reconciles to a "Breakdown" section
+        // (Net Fare + Promotions + Tip), so fall back to summing that
+        // section, excluding whichever line is nearest the word "tip".
         if let yourEarnings = firstAmount(afterKeyword: "your earnings", in: lines) {
             result.grossIncome = yourEarnings
         } else if let total = firstAmount(afterKeyword: "total earnings", in: lines) {
             result.grossIncome = max(total - (result.tips ?? 0), 0)
+        } else if let breakdownTotal = breakdownGrossIncome(lines: lines) {
+            result.grossIncome = breakdownTotal
         }
 
         result.miles = firstMiles(in: lines)
@@ -128,6 +134,44 @@ enum EarningsScreenshotParser {
         return nil
     }
 
+    /// Sums every dollar amount under a "Breakdown" section header, skipping
+    /// whichever amount's nearest text label mentions "tip" (that's already
+    /// captured separately as `tips`, and Shift keeps gross/tips as distinct
+    /// fields — summing it here too would double-count it).
+    private static func breakdownGrossIncome(lines: [String]) -> Double? {
+        guard let breakdownIndex = lines.firstIndex(where: { $0.trimmingCharacters(in: .whitespaces).lowercased() == "breakdown" }) else {
+            return nil
+        }
+
+        let stopMarkers: Set<String> = ["home", "discover", "menu", "inbox", "earnings"]
+        var endIndex = min(breakdownIndex + 20, lines.count)
+        for i in (breakdownIndex + 1)..<lines.count {
+            if stopMarkers.contains(lines[i].trimmingCharacters(in: .whitespaces).lowercased()) {
+                endIndex = i
+                break
+            }
+        }
+        guard endIndex > breakdownIndex + 1 else { return nil }
+
+        var total = 0.0
+        var foundAny = false
+        for i in (breakdownIndex + 1)..<endIndex {
+            guard let amount = extractDollarAmount(from: lines[i]) else { continue }
+            let windowStart = max(i - 2, breakdownIndex + 1)
+            let windowEnd = min(i + 3, endIndex)
+            let nearbyLabel = (windowStart..<windowEnd)
+                .filter { $0 != i }
+                .sorted { abs($0 - i) < abs($1 - i) }
+                .first { extractDollarAmount(from: lines[$0]) == nil }
+                .map { lines[$0].lowercased() } ?? ""
+
+            guard !nearbyLabel.contains("tip") else { continue }
+            total += amount
+            foundAny = true
+        }
+        return foundAny ? total : nil
+    }
+
     private static func extractDollarAmount(from text: String) -> Double? {
         guard let match = text.range(of: #"-?\$?\d[\d,]*\.\d{2}"#, options: .regularExpression) else { return nil }
         let cleaned = text[match]
@@ -148,10 +192,13 @@ enum EarningsScreenshotParser {
     }
 
     private static func firstHours(in lines: [String]) -> Double? {
+        // Lyft spells this "6 hr 39 min"; Uber's Stats grid abbreviates to
+        // "25 h 25 m" — matching just the leading "h"/"m" letter (optional
+        // "r"/"in" suffix) covers both without needing two separate patterns.
         for line in lines {
-            guard line.range(of: #"\d+\s*hr\b"#, options: [.regularExpression, .caseInsensitive]) != nil else { continue }
-            let hours = firstNumber(before: "hr", in: line) ?? 0
-            let minutes = firstNumber(before: "min", in: line) ?? 0
+            guard line.range(of: #"\d+\s*h(?:r)?\b"#, options: [.regularExpression, .caseInsensitive]) != nil else { continue }
+            let hours = firstNumber(before: "h", in: line) ?? 0
+            let minutes = firstNumber(before: "m", in: line) ?? 0
             if hours > 0 || minutes > 0 {
                 return hours + minutes / 60
             }
