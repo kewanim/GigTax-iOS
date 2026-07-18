@@ -31,7 +31,8 @@ enum TaxYearSummaryBuilder {
         driverProfile: DriverProfile?,
         taxYear: Int,
         methodOverride: DeductionMethod? = nil,
-        vehicle: Vehicle? = nil
+        vehicle: Vehicle? = nil,
+        recurringExpenses: [RecurringExpense] = []
     ) -> TaxSummary {
         let yearShifts = shifts.filter { $0.taxYear == taxYear }
         let yearTrips = trips.filter { $0.taxYear == taxYear }
@@ -39,9 +40,9 @@ enum TaxYearSummaryBuilder {
 
         let grossIncome = yearShifts.reduce(0) { $0 + $1.totalIncome }
         let phoneBusinessPercent = driverProfile?.phoneBusinessPercent ?? 100
-        let preliminaryDeductions = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent)
+        let preliminaryDeductions = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent, recurringExpenses: recurringExpenses, taxYear: taxYear)
         let depreciation = depreciationDeduction(vehicle: vehicle, businessUsePercent: preliminaryDeductions.businessUsePercent, taxYear: taxYear)
-        let deductions = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent, depreciationDeduction: depreciation)
+        let deductions = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent, depreciationDeduction: depreciation, recurringExpenses: recurringExpenses, taxYear: taxYear)
 
         let filingStatus = driverProfile?.filingStatus ?? .single
         let state = driverProfile?.state ?? "MD"
@@ -67,7 +68,8 @@ enum TaxYearSummaryBuilder {
         expenses: [Expense],
         driverProfile: DriverProfile?,
         taxYear: Int,
-        vehicle: Vehicle? = nil
+        vehicle: Vehicle? = nil,
+        recurringExpenses: [RecurringExpense] = []
     ) -> (standard: TaxSummary, actual: TaxSummary, recommended: DeductionMethod) {
         let yearShifts = shifts.filter { $0.taxYear == taxYear }
         let yearTrips = trips.filter { $0.taxYear == taxYear }
@@ -75,9 +77,9 @@ enum TaxYearSummaryBuilder {
 
         let grossIncome = yearShifts.reduce(0) { $0 + $1.totalIncome }
         let phoneBusinessPercent = driverProfile?.phoneBusinessPercent ?? 100
-        let preliminaryDeductions = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent)
+        let preliminaryDeductions = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent, recurringExpenses: recurringExpenses, taxYear: taxYear)
         let depreciation = depreciationDeduction(vehicle: vehicle, businessUsePercent: preliminaryDeductions.businessUsePercent, taxYear: taxYear)
-        let deductions = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent, depreciationDeduction: depreciation)
+        let deductions = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: phoneBusinessPercent, depreciationDeduction: depreciation, recurringExpenses: recurringExpenses, taxYear: taxYear)
 
         let filingStatus = driverProfile?.filingStatus ?? .single
         let state = driverProfile?.state ?? "MD"

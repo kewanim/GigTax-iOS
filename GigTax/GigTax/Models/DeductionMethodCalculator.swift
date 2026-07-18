@@ -30,7 +30,20 @@ enum DeductionMethodCalculator {
     ///   if any. Only affects the actual-expense total — depreciation is
     ///   already baked into the standard mileage rate, same as fuel and
     ///   maintenance.
-    static func compare(trips: [Trip], expenses: [Expense], phoneBusinessPercent: Double, depreciationDeduction: Double = 0) -> Comparison {
+    /// - Parameter recurringExpenses / taxYear: phone bills, cleaning
+    ///   services, etc. set up once and auto-logging — previously computed
+    ///   and displayed on the Expenses screen but never actually reaching
+    ///   this calculator, so they silently never reduced the driver's real
+    ///   tax total. Classified into vehicle vs. non-vehicle the same way
+    ///   one-time Expense records are.
+    static func compare(
+        trips: [Trip],
+        expenses: [Expense],
+        phoneBusinessPercent: Double,
+        depreciationDeduction: Double = 0,
+        recurringExpenses: [RecurringExpense] = [],
+        taxYear: Int = Calendar.current.component(.year, from: .now)
+    ) -> Comparison {
         let completedTrips = trips.filter { $0.isComplete }
         let businessMiles = completedTrips.filter { $0.tripType == .business }.reduce(0) { $0 + $1.distanceMiles }
         let totalMiles = completedTrips.reduce(0) { $0 + $1.distanceMiles }
@@ -39,11 +52,19 @@ enum DeductionMethodCalculator {
         let vehicleExpenses = expenses
             .filter { vehicleCostCategories.contains($0.category) }
             .reduce(0) { $0 + $1.amount }
+        + recurringExpenses
+            .filter { vehicleCostCategories.contains($0.category) }
+            .reduce(0) { $0 + $1.proRatedTotal(forTaxYear: taxYear) }
 
         let nonVehicleExpenses = expenses
             .filter { !vehicleCostCategories.contains($0.category) }
             .reduce(0) { total, expense in
                 total + expense.deductibleAmount(phoneBusinessPercent: phoneBusinessPercent)
+            }
+        + recurringExpenses
+            .filter { !vehicleCostCategories.contains($0.category) }
+            .reduce(0) { total, recurring in
+                total + recurring.deductibleAmount(phoneBusinessPercent: phoneBusinessPercent, forTaxYear: taxYear)
             }
 
         let standard = businessMiles * 0.70 + nonVehicleExpenses

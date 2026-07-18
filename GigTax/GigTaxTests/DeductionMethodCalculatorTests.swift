@@ -76,4 +76,49 @@ struct DeductionMethodCalculatorTests {
         // Standard: 1000 * 0.70 = 700. Actual: 5000 (100% business use). Actual wins.
         #expect(result.betterMethod == .actual)
     }
+
+    // Recurring expenses were previously computed and displayed on the
+    // Expenses screen but never actually reached this calculator — meaning
+    // they never reduced a driver's real computed tax total. These confirm
+    // the fix actually reaches the aggregate totals ScheduleCMapper consumes.
+    @Test func recurringNonVehicleExpenseCountsTowardBothMethods() {
+        let year = Calendar.current.component(.year, from: .now)
+        let trips = [trip(distance: 100, type: .business)]
+        let phoneStart = Calendar.current.date(from: DateComponents(year: year - 2, month: 1, day: 1))!
+        let recurringPhone = RecurringExpense(category: .phone, amount: 85, frequency: .monthly, startDate: phoneStart)
+        let expectedDeduction = recurringPhone.proRatedTotal(forTaxYear: year - 1) * 0.8
+
+        let result = DeductionMethodCalculator.compare(
+            trips: trips, expenses: [], phoneBusinessPercent: 80,
+            recurringExpenses: [recurringPhone], taxYear: year - 1
+        )
+        #expect(abs(result.nonVehicleExpenses - expectedDeduction) < 0.01)
+        #expect(abs(result.standardMileageDeduction - (70 + expectedDeduction)) < 0.01)
+        #expect(abs(result.actualExpenseDeduction - expectedDeduction) < 0.01)
+    }
+
+    @Test func recurringVehicleCostExpenseOnlyCountsTowardActualMethod() {
+        let year = Calendar.current.component(.year, from: .now)
+        let trips = [trip(distance: 100, type: .business)]
+        let maintenanceStart = Calendar.current.date(from: DateComponents(year: year - 2, month: 1, day: 1))!
+        let recurringMaintenance = RecurringExpense(category: .maintenance, amount: 40, frequency: .monthly, startDate: maintenanceStart)
+        let expectedVehicleTotal = recurringMaintenance.proRatedTotal(forTaxYear: year - 1)
+
+        let result = DeductionMethodCalculator.compare(
+            trips: trips, expenses: [], phoneBusinessPercent: 100,
+            recurringExpenses: [recurringMaintenance], taxYear: year - 1
+        )
+        // 100% business use here, so the full recurring maintenance cost counts under actual.
+        #expect(abs(result.standardMileageDeduction - 70) < 0.01)
+        #expect(abs(result.actualExpenseDeduction - expectedVehicleTotal) < 0.01)
+    }
+
+    @Test func omittingRecurringExpensesDefaultsToPreviousBehavior() {
+        // Regression: every pre-existing call site that hasn't been updated
+        // to pass recurringExpenses must behave exactly as before.
+        let trips = [trip(distance: 100, type: .business)]
+        let result = DeductionMethodCalculator.compare(trips: trips, expenses: [], phoneBusinessPercent: 100)
+        #expect(abs(result.standardMileageDeduction - 70) < 0.01)
+        #expect(result.nonVehicleExpenses == 0)
+    }
 }

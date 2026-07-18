@@ -9,6 +9,7 @@ final class VehicleUITests: XCTestCase {
     @MainActor
     func testAddMaintenanceItemAppearsInSchedule() throws {
         let app = XCUIApplication()
+        app.launchArguments = ["-uiTestReset"]
         app.launch()
 
         let expensesTab = app.tabBars.buttons["Expenses"]

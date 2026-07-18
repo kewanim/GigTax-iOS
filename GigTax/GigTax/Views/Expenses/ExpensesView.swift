@@ -10,6 +10,7 @@ struct ExpensesView: View {
     @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @Query private var recurringExpenses: [RecurringExpense]
     @Query private var driverProfiles: [DriverProfile]
+    @Environment(\.modelContext) private var modelContext
 
     @State private var showManualEntry = false
     @State private var groupMode = GroupMode.month
@@ -22,8 +23,11 @@ struct ExpensesView: View {
     private var categoryTotals: [(category: ExpenseCategory, total: Double)] {
         var totals: [ExpenseCategory: Double] = [:]
         for expense in ytdExpenses { totals[expense.category, default: 0] += expense.amount }
-        for recurring in recurringExpenses where recurring.isActive {
-            totals[recurring.category, default: 0] += recurring.proRatedTotalToDate
+        // Not filtered by isActive — proRatedTotal is already correctly
+        // date-bound (via startDate/endDate), and something paused mid-year
+        // still legitimately contributed to this year's total before it stopped.
+        for recurring in recurringExpenses {
+            totals[recurring.category, default: 0] += recurring.proRatedTotal(forTaxYear: currentYear)
         }
         return totals.map { (category: $0.key, total: $0.value) }.sorted { $0.total > $1.total }
     }
@@ -97,6 +101,7 @@ struct ExpensesView: View {
                                         ExpenseRow(expense: expense, phoneBusinessPercent: phoneBusinessPercent)
                                     }
                                 }
+                                .onDelete { offsets in delete(group.expenses, at: offsets) }
                             }
                         }
                     } else {
@@ -109,6 +114,7 @@ struct ExpensesView: View {
                                         ExpenseRow(expense: expense, phoneBusinessPercent: phoneBusinessPercent)
                                     }
                                 }
+                                .onDelete { offsets in delete(group.expenses, at: offsets) }
                             }
                         }
                     }
@@ -150,6 +156,10 @@ struct ExpensesView: View {
     private var groupedByCategory: [(category: ExpenseCategory, expenses: [Expense])] {
         let dict = Dictionary(grouping: filteredExpenses, by: \.category)
         return dict.keys.sorted { $0.rawValue < $1.rawValue }.map { (category: $0, expenses: dict[$0]!) }
+    }
+
+    private func delete(_ expensesInSection: [Expense], at offsets: IndexSet) {
+        for index in offsets { modelContext.delete(expensesInSection[index]) }
     }
 }
 

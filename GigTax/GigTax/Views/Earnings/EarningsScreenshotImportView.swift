@@ -9,6 +9,7 @@ import PhotosUI
 struct EarningsScreenshotImportView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(LocationService.self) private var locationService
 
     @State private var photosPickerItem: PhotosPickerItem?
     @State private var selectedImage: UIImage?
@@ -21,6 +22,9 @@ struct EarningsScreenshotImportView: View {
     @State private var grossIncomeText = ""
     @State private var tipsText = ""
     @State private var hoursWorkedText = ""
+    @State private var milesText = ""
+    @State private var milesWasFoundByOCR = false
+    @State private var estimateRateText = ""
 
     var body: some View {
         NavigationStack {
@@ -81,6 +85,7 @@ struct EarningsScreenshotImportView: View {
         }
     }
 
+    @ViewBuilder
     private var reviewSection: some View {
         Section {
             DatePicker("Date", selection: $date, displayedComponents: .date)
@@ -104,10 +109,33 @@ struct EarningsScreenshotImportView: View {
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
             }
+            LabeledContent("Miles") {
+                TextField("0", text: $milesText)
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+            }
         } header: {
             Text("Review & Confirm")
         } footer: {
             Text("Double check these against your screenshot above — extracted values aren't always perfect.")
+        }
+
+        if !milesWasFoundByOCR {
+            Section {
+                LabeledContent("$1 ≈") {
+                    HStack(spacing: 4) {
+                        TextField("0.0", text: $estimateRateText)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .onChange(of: estimateRateText) { _, _ in updateEstimatedMiles() }
+                        Text("mi").foregroundStyle(.secondary)
+                    }
+                }
+            } header: {
+                Text("Estimate Mileage")
+            } footer: {
+                Text("This screenshot doesn't show mileage. Enter your typical earnings-per-mile rate and GigTax will estimate miles driven from your gross income — or just type the exact miles above if you know it.")
+            }
         }
     }
 
@@ -136,6 +164,14 @@ struct EarningsScreenshotImportView: View {
         grossIncomeText = result.grossIncome.map { String(format: "%.2f", $0) } ?? ""
         tipsText = result.tips.map { String(format: "%.2f", $0) } ?? ""
         hoursWorkedText = result.hoursWorked.map { String(format: "%.2f", $0) } ?? ""
+        milesWasFoundByOCR = result.miles != nil
+        milesText = result.miles.map { String(format: "%.1f", $0) } ?? ""
+    }
+
+    private func updateEstimatedMiles() {
+        guard let rate = Double(estimateRateText), rate > 0 else { return }
+        let gross = Double(grossIncomeText) ?? 0
+        milesText = String(format: "%.1f", gross * rate)
     }
 
     private func save() {
@@ -151,6 +187,38 @@ struct EarningsScreenshotImportView: View {
             shift.screenshotImagePath = ReceiptStorage.save(data: data, fileExtension: "jpg")
         }
         modelContext.insert(shift)
+
+        if let miles = Double(milesText), miles > 0 {
+            // Real or estimated mileage from the screenshot needs to be a real
+            // Trip, not just a cosmetic field, or it never reaches the actual
+            // standard-mileage deduction — same 55/45 city/highway split
+            // ManualTripEntryView uses, since a screenshot has no GPS split to work from.
+            let cityMiles = miles * 0.55
+            let highwayMiles = miles * 0.45
+            let gallons = (locationService.cityMPG > 0 ? cityMiles / locationService.cityMPG : 0)
+                        + (locationService.highwayMPG > 0 ? highwayMiles / locationService.highwayMPG : 0)
+
+            let trip = Trip(startDate: date, isManualEntry: true)
+            trip.endDate = date
+            trip.distanceMiles = miles
+            trip.cityMiles = cityMiles
+            trip.highwayMiles = highwayMiles
+            trip.tripTypeRaw = TripType.business.rawValue
+            trip.businessPurpose = "\(platform.rawValue) — estimated from earnings import"
+            trip.estimatedFuelGallons = gallons
+            trip.estimatedFuelCost = gallons * locationService.gasPrice
+
+            modelContext.insert(trip)
+            if let fuelExpense = Expense.fuelExpense(for: trip) {
+                modelContext.insert(fuelExpense)
+            }
+            shift.linkedTripID = trip.id
+
+            if let vehicle = locationService.vehicle {
+                MaintenanceScheduler.evaluate(vehicle: vehicle, modelContext: modelContext)
+            }
+        }
+
         try? modelContext.save()
         dismiss()
     }
@@ -159,4 +227,5 @@ struct EarningsScreenshotImportView: View {
 #Preview {
     EarningsScreenshotImportView()
         .modelContainer(for: Shift.self, inMemory: true)
+        .environment(LocationService())
 }

@@ -9,6 +9,7 @@ struct DashboardView: View {
     @Query private var driverProfiles: [DriverProfile]
     @Query private var payments: [QuarterlyPayment]
     @Query private var vehicles: [Vehicle]
+    @Query private var recurringExpenses: [RecurringExpense]
 
     @State private var taxYear = Calendar.current.component(.year, from: .now)
     @State private var methodOverride: DeductionMethod?
@@ -25,7 +26,7 @@ struct DashboardView: View {
     private var yearShifts: [Shift] { shifts.filter { $0.taxYear == taxYear } }
 
     private var comparison: (standard: TaxSummary, actual: TaxSummary, recommended: DeductionMethod) {
-        TaxYearSummaryBuilder.compareBothMethods(shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, vehicle: vehicles.first)
+        TaxYearSummaryBuilder.compareBothMethods(shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, vehicle: vehicles.first, recurringExpenses: recurringExpenses)
     }
 
     private var selectedMethod: DeductionMethod {

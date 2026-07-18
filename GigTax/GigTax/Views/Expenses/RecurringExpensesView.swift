@@ -80,6 +80,8 @@ struct RecurringExpenseEntryView: View {
     @State private var frequency: RecurringFrequency
     @State private var startDate: Date
     @State private var isActive: Bool
+    @State private var hasEndDate: Bool
+    @State private var endDate: Date
 
     init(editing recurring: RecurringExpense? = nil) {
         editing = recurring
@@ -88,6 +90,8 @@ struct RecurringExpenseEntryView: View {
         _frequency = State(initialValue: recurring?.frequency ?? .monthly)
         _startDate = State(initialValue: recurring?.startDate ?? Date())
         _isActive = State(initialValue: recurring?.isActive ?? true)
+        _hasEndDate = State(initialValue: recurring?.endDate != nil)
+        _endDate = State(initialValue: recurring?.endDate ?? Date())
     }
 
     private var amount: Double { Double(amountText) ?? 0 }
@@ -119,8 +123,16 @@ struct RecurringExpenseEntryView: View {
                 if editing != nil {
                     Section {
                         Toggle("Active", isOn: $isActive)
+                        if !isActive {
+                            Toggle("It stopped earlier than today", isOn: $hasEndDate)
+                            if hasEndDate {
+                                DatePicker("Ended", selection: $endDate, in: startDate..., displayedComponents: .date)
+                            }
+                        }
                     } footer: {
-                        Text("Pause instead of deleting to keep past pro-rated totals accurate.")
+                        Text(isActive
+                             ? "Pause instead of deleting to keep past pro-rated totals accurate."
+                             : "Without a specific end date, this stops counting starting today — past totals stay accurate either way.")
                     }
                 }
             }
@@ -140,14 +152,21 @@ struct RecurringExpenseEntryView: View {
     }
 
     private func save() {
+        // isActive == false always implies a real endDate, defaulting to
+        // "today" when the driver doesn't specify one earlier — so the tax
+        // math (which trusts endDate, not isActive) actually stops counting
+        // this expense, while every already-elapsed day/year stays intact.
+        let resolvedEndDate: Date? = isActive ? nil : (hasEndDate ? endDate : Date.now)
+
         if let existing = editing {
             existing.category = category
             existing.amount = amount
             existing.frequency = frequency
             existing.startDate = startDate
+            existing.endDate = resolvedEndDate
             existing.isActive = isActive
         } else {
-            let recurring = RecurringExpense(category: category, amount: amount, frequency: frequency, startDate: startDate)
+            let recurring = RecurringExpense(category: category, amount: amount, frequency: frequency, startDate: startDate, endDate: resolvedEndDate, isActive: isActive)
             modelContext.insert(recurring)
         }
         dismiss()

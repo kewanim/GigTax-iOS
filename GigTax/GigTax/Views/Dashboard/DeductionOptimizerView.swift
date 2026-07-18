@@ -8,6 +8,7 @@ struct DeductionOptimizerView: View {
     @Query private var expenses: [Expense]
     @Query private var driverProfiles: [DriverProfile]
     @Query private var vehicles: [Vehicle]
+    @Query private var recurringExpenses: [RecurringExpense]
 
     let taxYear: Int
 
@@ -16,17 +17,21 @@ struct DeductionOptimizerView: View {
     /// Deliberately excludes depreciation — this feeds the breakeven-mileage
     /// chart, which is specifically about vehicle *operating* costs
     /// (fuel/maintenance/insurance) vs. the standard rate, not the full
-    /// actual-expense total.
+    /// actual-expense total. Recurring vehicle-cost-category expenses (e.g. a
+    /// subscription car wash) are real operating costs too, so they're
+    /// included the same as one-time logged ones.
     private var comparison: DeductionMethodCalculator.Comparison {
         DeductionMethodCalculator.compare(
             trips: trips.filter { $0.taxYear == taxYear },
             expenses: expenses.filter { $0.taxYear == taxYear },
-            phoneBusinessPercent: driverProfile?.phoneBusinessPercent ?? 100
+            phoneBusinessPercent: driverProfile?.phoneBusinessPercent ?? 100,
+            recurringExpenses: recurringExpenses,
+            taxYear: taxYear
         )
     }
 
     private var taxComparison: (standard: TaxSummary, actual: TaxSummary, recommended: DeductionMethod) {
-        TaxYearSummaryBuilder.compareBothMethods(shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, vehicle: vehicles.first)
+        TaxYearSummaryBuilder.compareBothMethods(shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, vehicle: vehicles.first, recurringExpenses: recurringExpenses)
     }
 
     private var breakeven: BreakevenMileageCalculator.Result? {

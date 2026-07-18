@@ -50,6 +50,16 @@ struct SettingsView: View {
 
                 Section {
                     NavigationLink {
+                        CloudBackupView()
+                    } label: {
+                        Label("Backup & iCloud", systemImage: "icloud")
+                    }
+                } footer: {
+                    Text("Check whether GigTax is currently backing up to your iCloud account.")
+                }
+
+                Section {
+                    NavigationLink {
                         DataExportView()
                     } label: {
                         Label("Export Data", systemImage: "square.and.arrow.up.on.square")
@@ -66,4 +76,5 @@ struct SettingsView: View {
 #Preview {
     SettingsView()
         .modelContainer(for: DriverProfile.self, inMemory: true)
+        .environment(CloudSyncStatusService())
 }

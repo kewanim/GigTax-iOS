@@ -25,6 +25,7 @@ private enum EarningsPeriod: String, CaseIterable {
 
 struct EarningsView: View {
     @Query(sort: \Shift.date, order: .reverse) private var shifts: [Shift]
+    @Environment(\.modelContext) private var modelContext
     @State private var showImport = false
     @State private var showScreenshotImport = false
     @State private var showManualEntry = false
@@ -103,6 +104,7 @@ struct EarningsView: View {
                                     ShiftRow(shift: shift)
                                 }
                             }
+                            .onDelete { offsets in delete(group.shifts, at: offsets) }
                         }
                     }
                 }
@@ -145,6 +147,10 @@ struct EarningsView: View {
             calendar.date(from: calendar.dateComponents([.year, .month], from: shift.date)) ?? shift.date
         }
         return dict.keys.sorted(by: >).map { (month: $0, shifts: dict[$0]!) }
+    }
+
+    private func delete(_ shiftsInSection: [Shift], at offsets: IndexSet) {
+        for index in offsets { modelContext.delete(shiftsInSection[index]) }
     }
 }
 
