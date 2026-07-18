@@ -3,6 +3,7 @@ import SwiftData
 
 struct VehicleDetailsView: View {
     @Query private var vehicles: [Vehicle]
+    @Query private var trips: [Trip]
     @Environment(\.modelContext) private var modelContext
 
     @State private var ownership: VehicleOwnership = .owned
@@ -100,7 +101,6 @@ struct VehicleDetailsView: View {
 
     private var estimatedOdometer: Double {
         guard let vehicle else { return 0 }
-        let trips = (try? modelContext.fetch(FetchDescriptor<Trip>())) ?? []
         return OdometerReconciliation.estimatedCurrentOdometer(vehicle: vehicle, completedTrips: trips)
     }
 

@@ -4,8 +4,17 @@ struct WelcomeView: View {
     let onNext: () -> Void
 
     var body: some View {
+        GeometryReader { geo in
+            ScrollView {
+                content
+                    .frame(minHeight: geo.size.height)
+            }
+        }
+    }
+
+    private var content: some View {
         VStack(spacing: 0) {
-            Spacer()
+            Spacer(minLength: 24)
 
             VStack(spacing: 24) {
                 ZStack {
@@ -31,7 +40,7 @@ struct WelcomeView: View {
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 24)
 
             VStack(spacing: 16) {
                 featureRow(icon: "location.fill", color: .blue,
@@ -46,7 +55,7 @@ struct WelcomeView: View {
             }
             .padding(.horizontal, 24)
 
-            Spacer()
+            Spacer(minLength: 24)
 
             Button(action: onNext) {
                 Text("Get Started")

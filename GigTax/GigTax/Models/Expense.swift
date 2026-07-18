@@ -3,16 +3,19 @@ import SwiftData
 
 @Model
 final class Expense {
-    var id: UUID
-    var date: Date
-    var categoryRaw: String
-    var amount: Double
-    var notes: String
-    var isRecurring: Bool
+    // Every stored property below needs an inline default (not just one set in
+    // init) — CloudKit's schema validation rejects any non-optional attribute
+    // without one, and real values are always overwritten by init() anyway.
+    var id: UUID = UUID()
+    var date: Date = Date.now
+    var categoryRaw: String = ExpenseCategory.other.rawValue
+    var amount: Double = 0
+    var notes: String = ""
+    var isRecurring: Bool = false
     var receiptImagePath: String?      // relative path in app sandbox
     var linkedTripID: UUID?            // auto-linked when generated from a trip
     var linkedMaintenanceItemID: UUID? // auto-linked when generated from a logged maintenance service
-    var taxYear: Int
+    var taxYear: Int = Calendar.current.component(.year, from: .now)
 
     var category: ExpenseCategory {
         get { ExpenseCategory(rawValue: categoryRaw) ?? .other }

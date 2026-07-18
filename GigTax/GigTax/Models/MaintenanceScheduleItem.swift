@@ -3,15 +3,18 @@ import SwiftData
 
 @Model
 final class MaintenanceScheduleItem {
-    var id: UUID
+    // Every stored property below needs an inline default (not just one set in
+    // init) — CloudKit's schema validation rejects any non-optional attribute
+    // without one, and real values are always overwritten by init() anyway.
+    var id: UUID = UUID()
     var vehicleID: UUID?          // scoped now even with one vehicle today — costs nothing,
                                    // avoids a migration if multi-vehicle ever ships
-    var typeRaw: String
-    var intervalMiles: Double
-    var estimatedCost: Double     // starts at MaintenanceType default, overwritten once a real cost is logged
-    var lastServiceMileage: Double
+    var typeRaw: String = MaintenanceType.oilChange.rawValue
+    var intervalMiles: Double = 0
+    var estimatedCost: Double = 0 // starts at MaintenanceType default, overwritten once a real cost is logged
+    var lastServiceMileage: Double = 0
     var lastServiceDate: Date?
-    var isActive: Bool
+    var isActive: Bool = true
 
     // Edge-detection state: nil means "not yet notified for the current crossing".
     // Without these, a level-triggered check (odometer >= threshold) would re-fire
