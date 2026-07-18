@@ -148,46 +148,48 @@ struct VehicleSetupView: View {
                             Text("Note: LE/XLE/XSE trim names aren't in EPA data. Pick by drivetrain and MPG — all trims of the same drivetrain get the same fuel economy rating.")
                                 .font(.caption).foregroundStyle(.secondary)
                         } header: { Text("Engine / Drivetrain") }
+                    }
 
-                    Section("Fuel Economy (MPG)") {
-                        LabeledContent("City MPG") {
-                            TextField("e.g. 28", value: $data.cityMPG, format: .number)
-                                .keyboardType(.decimalPad).multilineTextAlignment(.trailing)
-                        }
-                        LabeledContent("Highway MPG") {
-                            TextField("e.g. 36", value: $data.highwayMPG, format: .number)
-                                .keyboardType(.decimalPad).multilineTextAlignment(.trailing)
-                        }
-                        if data.cityMPG > 0 && data.highwayMPG > 0 {
-                            HStack {
-                                Text("Combined")
-                                    .foregroundStyle(.secondary)
-                                Spacer()
-                                Text("\(String(format: "%.0f", (0.55 * data.cityMPG) + (0.45 * data.highwayMPG))) MPG")
-                                    .fontWeight(.semibold)
+                    if !isLoadingMPG {
+                        Section("Fuel Economy (MPG)") {
+                            LabeledContent("City MPG") {
+                                TextField("e.g. 28", value: $data.cityMPG, format: .number)
+                                    .keyboardType(.decimalPad).multilineTextAlignment(.trailing)
                             }
-                        } else if mpgError {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("EPA data unavailable — enter MPG manually, or retry.")
-                                    .font(.caption).foregroundStyle(.secondary)
-                                Button("Retry") {
-                                    if let model = selectedModel { selectModel(model) }
+                            LabeledContent("Highway MPG") {
+                                TextField("e.g. 36", value: $data.highwayMPG, format: .number)
+                                    .keyboardType(.decimalPad).multilineTextAlignment(.trailing)
+                            }
+                            if data.cityMPG > 0 && data.highwayMPG > 0 {
+                                HStack {
+                                    Text("Combined")
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                    Text("\(String(format: "%.0f", (0.55 * data.cityMPG) + (0.45 * data.highwayMPG))) MPG")
+                                        .fontWeight(.semibold)
+                                }
+                            } else if mpgError {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("EPA data unavailable — enter MPG manually, or retry.")
+                                        .font(.caption).foregroundStyle(.secondary)
+                                    Button("Retry") {
+                                        if let model = selectedModel { selectModel(model) }
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    Section("Starting Odometer") {
-                        LabeledContent("Current Miles") {
-                            TextField("e.g. 42000", text: $odometerText)
-                                .keyboardType(.numberPad).multilineTextAlignment(.trailing)
-                                .onChange(of: odometerText) { _, v in data.startingOdometer = Double(v) ?? 0 }
+                        Section("Starting Odometer") {
+                            LabeledContent("Current Miles") {
+                                TextField("e.g. 42000", text: $odometerText)
+                                    .keyboardType(.numberPad).multilineTextAlignment(.trailing)
+                                    .onChange(of: odometerText) { _, v in data.startingOdometer = Double(v) ?? 0 }
+                            }
+                            Text("Used to track total mileage for depreciation calculations.")
+                                .font(.caption).foregroundStyle(.secondary)
                         }
-                        Text("Used to track total mileage for depreciation calculations.")
-                            .font(.caption).foregroundStyle(.secondary)
                     }
                 }
-            }
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

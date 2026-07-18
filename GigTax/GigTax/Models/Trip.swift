@@ -22,6 +22,7 @@ final class Trip {
     var taxYear: Int
     var startAddress: String?  // reverse-geocoded, cached once resolved; nil until resolved or if geocoding fails
     var endAddress: String?
+    var didAttemptGeocode: Bool = false  // prevents re-hitting CLGeocoder on every row reappearance in a List after a failed lookup
 
     var tripType: TripType {
         get { TripType(rawValue: tripTypeRaw) ?? .unknown }
