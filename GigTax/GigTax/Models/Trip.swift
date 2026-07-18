@@ -3,23 +3,26 @@ import SwiftData
 
 @Model
 final class Trip {
-    var id: UUID
-    var startDate: Date
+    // Every stored property below needs an inline default (not just one set in
+    // init) — CloudKit's schema validation rejects any non-optional attribute
+    // without one, and real values are always overwritten by init() anyway.
+    var id: UUID = UUID()
+    var startDate: Date = Date.now
     var endDate: Date?
-    var startLatitude: Double
-    var startLongitude: Double
+    var startLatitude: Double = 0
+    var startLongitude: Double = 0
     var endLatitude: Double?
     var endLongitude: Double?
-    var distanceMiles: Double
-    var cityMiles: Double
-    var highwayMiles: Double
-    var durationSeconds: Double
-    var estimatedFuelGallons: Double
-    var estimatedFuelCost: Double
-    var tripTypeRaw: String
-    var businessPurpose: String
-    var isManualEntry: Bool
-    var taxYear: Int
+    var distanceMiles: Double = 0
+    var cityMiles: Double = 0
+    var highwayMiles: Double = 0
+    var durationSeconds: Double = 0
+    var estimatedFuelGallons: Double = 0
+    var estimatedFuelCost: Double = 0
+    var tripTypeRaw: String = TripType.unknown.rawValue
+    var businessPurpose: String = ""
+    var isManualEntry: Bool = false
+    var taxYear: Int = Calendar.current.component(.year, from: .now)
     var startAddress: String?  // reverse-geocoded, cached once resolved; nil until resolved or if geocoding fails
     var endAddress: String?
 
