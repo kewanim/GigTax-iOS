@@ -92,4 +92,52 @@ struct LocationServiceTests {
         }
         #expect(service.isTracking == false)
     }
+
+    // GT-113: a trip's business/personal tag is now captured at the moment it
+    // starts, based on whether a manual shift is active — previously every
+    // auto-detected trip was hardcoded to business regardless of real intent.
+
+    @Test func tripStartedWithNoActiveShiftIsTaggedPersonal() throws {
+        let (service, context) = try makeService()
+        let start = Date()
+        drive(service, start: start, from: 0, through: 70)
+        park(service, start: start, atOffsetSeconds: 70, from: 75, through: 265)
+
+        let saved = try context.fetch(FetchDescriptor<Trip>())
+        #expect(saved.first?.tripType == .personal)
+    }
+
+    @Test func tripStartedDuringAnActiveShiftIsTaggedBusiness() throws {
+        let (service, context) = try makeService()
+        service.startShift()
+        let start = Date()
+        drive(service, start: start, from: 0, through: 70)
+        park(service, start: start, atOffsetSeconds: 70, from: 75, through: 265)
+
+        let saved = try context.fetch(FetchDescriptor<Trip>())
+        #expect(saved.first?.tripType == .business)
+    }
+
+    @Test func endingShiftMidTripDoesNotRetroactivelyRetagIt() throws {
+        let (service, context) = try makeService()
+        service.startShift()
+        let start = Date()
+        drive(service, start: start, from: 0, through: 70) // trip starts while shift is active
+        service.endShift() // shift ends mid-trip
+        park(service, start: start, atOffsetSeconds: 70, from: 75, through: 265)
+
+        let saved = try context.fetch(FetchDescriptor<Trip>())
+        #expect(saved.first?.tripType == .business)
+    }
+
+    @Test func restoredShiftStateFromRelaunchAppliesToNextTrip() throws {
+        let (service, context) = try makeService()
+        service.restoreShiftState(active: true, startDate: Date().addingTimeInterval(-3600))
+        let start = Date()
+        drive(service, start: start, from: 0, through: 70)
+        park(service, start: start, atOffsetSeconds: 70, from: 75, through: 265)
+
+        let saved = try context.fetch(FetchDescriptor<Trip>())
+        #expect(saved.first?.tripType == .business)
+    }
 }

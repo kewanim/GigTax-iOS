@@ -60,6 +60,16 @@ struct SettingsView: View {
 
                 Section {
                     NavigationLink {
+                        GasPriceSettingsView()
+                    } label: {
+                        Label("Gas Price", systemImage: "fuelpump")
+                    }
+                } footer: {
+                    Text("Check the gas price GigTax is using for fuel cost estimates, and optionally add a free key for live daily prices.")
+                }
+
+                Section {
+                    NavigationLink {
                         DataExportView()
                     } label: {
                         Label("Export Data", systemImage: "square.and.arrow.up.on.square")

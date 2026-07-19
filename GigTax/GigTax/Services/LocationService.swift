@@ -12,13 +12,53 @@ final class LocationService: NSObject {
     private(set) var currentTripMiles: Double = 0
     private(set) var currentTripStart: Date?
     private(set) var authorizationStatus: CLAuthorizationStatus = .notDetermined
+    private(set) var isShiftActive = false
+    private(set) var shiftStartDate: Date?
 
     // MARK: - Config (set by ContentView)
     var cityMPG: Double = 28
     var highwayMPG: Double = 36
     var gasPrice: Double = 3.45
+    private(set) var gasPriceStatus: EIAGasPrice?
     var modelContext: ModelContext?
     var vehicle: Vehicle?
+    var driverProfile: DriverProfile?
+
+    /// Was hardcoded to business for every auto-detected trip regardless of
+    /// real intent. Restored on launch from DriverProfile so a shift spanning
+    /// app relaunch/backgrounding isn't silently dropped.
+    func restoreShiftState(active: Bool, startDate: Date?) {
+        isShiftActive = active
+        shiftStartDate = active ? startDate : nil
+    }
+
+    func startShift() {
+        isShiftActive = true
+        shiftStartDate = .now
+        persistShiftState()
+    }
+
+    /// Doesn't retroactively re-tag a trip already in progress — its
+    /// business/personal tag was already captured the instant it began.
+    func endShift() {
+        isShiftActive = false
+        shiftStartDate = nil
+        persistShiftState()
+    }
+
+    private func persistShiftState() {
+        driverProfile?.isShiftActive = isShiftActive
+        driverProfile?.shiftStartDate = shiftStartDate
+        try? modelContext?.save()
+    }
+
+    /// Was a flat $3.45 fallback for every driver in every state until this
+    /// was actually wired up — see EIAService for the fix's real substance.
+    func refreshGasPrice(state: String, apiKey: String?) async {
+        let result = await EIAService.shared.fetchGasPrice(state: state, apiKey: apiKey)
+        gasPrice = result.pricePerGallon
+        gasPriceStatus = result
+    }
 
     // MARK: - Private
     private let manager = CLLocationManager()
@@ -30,6 +70,9 @@ final class LocationService: NSObject {
     private var movingStart: Date?
     private var stationaryStart: Date?
     private var tripActivity: Activity<TripActivityAttributes>?
+    // Captured once, at the moment a trip starts, so ending a shift mid-trip
+    // never retroactively re-tags a trip already correctly classified.
+    private var currentTripIsBusiness = false
 
     // ~5 mph and ~2 mph in m/s
     private let startSpeedMS: Double = 2.2
@@ -199,6 +242,7 @@ final class LocationService: NSObject {
         isTracking = true
         currentTripStart = loc.timestamp
         tripStartLoc = loc
+        currentTripIsBusiness = isShiftActive
         cityMilesAcc = 0; hwyMilesAcc = 0; totalMilesAcc = 0
         currentTripMiles = 0; stationaryStart = nil
         enterActiveMode(accuracy: kCLLocationAccuracyBest, distanceFilter: 10)
@@ -259,7 +303,10 @@ final class LocationService: NSObject {
         trip.durationSeconds      = duration
         trip.estimatedFuelGallons = gallons
         trip.estimatedFuelCost    = gallons * gasPrice
-        trip.tripTypeRaw          = TripType.business.rawValue
+        // Deadhead miles between fares while a shift is active still count as
+        // business; anything driven outside a shift (grocery run, drive home)
+        // is personal by default instead of the old hardcoded "always business".
+        trip.tripTypeRaw          = (currentTripIsBusiness ? TripType.business : TripType.personal).rawValue
 
         modelContext?.insert(trip)
         if let fuelExpense = Expense.fuelExpense(for: trip) {
@@ -280,6 +327,7 @@ final class LocationService: NSObject {
         tripStartLoc = nil; lastLoc = nil
         cityMilesAcc = 0; hwyMilesAcc = 0; totalMilesAcc = 0
         movingStart = nil; stationaryStart = nil
+        currentTripIsBusiness = false
     }
 }
 

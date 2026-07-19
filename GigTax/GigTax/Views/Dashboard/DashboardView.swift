@@ -3,6 +3,7 @@ import SwiftData
 import Charts
 
 struct DashboardView: View {
+    @Environment(LocationService.self) private var locationService
     @Query private var shifts: [Shift]
     @Query private var trips: [Trip]
     @Query private var expenses: [Expense]
@@ -76,6 +77,36 @@ struct DashboardView: View {
 
     var body: some View {
         NavigationStack {
+            VStack(spacing: 0) {
+                ShiftControlCard(
+                    isShiftActive: locationService.isShiftActive,
+                    shiftStartDate: locationService.shiftStartDate,
+                    onStart: { locationService.startShift() },
+                    onEnd: { locationService.endShift() }
+                )
+                .padding()
+                .background(Color(.secondarySystemGroupedBackground))
+
+                dashboardContent
+            }
+            .navigationTitle("Dashboard")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Picker("Tax Year", selection: $taxYear) {
+                        ForEach(availableYears, id: \.self) { year in
+                            Text(String(year)).tag(year)
+                        }
+                    }
+                }
+            }
+            .alert(item: $explainedLine) { line in
+                Alert(title: Text(line.title), message: Text(line.explanation(taxSummary: taxSummary)), dismissButton: .default(Text("Got it")))
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var dashboardContent: some View {
             Group {
                 if yearShifts.isEmpty {
                     ContentUnavailableView(
@@ -187,20 +218,6 @@ struct DashboardView: View {
                     }
                 }
             }
-            .navigationTitle("Dashboard")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Picker("Tax Year", selection: $taxYear) {
-                        ForEach(availableYears, id: \.self) { year in
-                            Text(String(year)).tag(year)
-                        }
-                    }
-                }
-            }
-            .alert(item: $explainedLine) { line in
-                Alert(title: Text(line.title), message: Text(line.explanation(taxSummary: taxSummary)), dismissButton: .default(Text("Got it")))
-            }
-        }
     }
 }
 
@@ -253,6 +270,38 @@ private enum WaterfallLine: String, CaseIterable, Identifiable {
         case .total:
             return "Self-employment tax + federal tax + state tax. Effective rate: \((taxSummary.effectiveRate * 100).formatted(.number.precision(.fractionLength(1))))% of gross income. Marginal federal bracket: \((taxSummary.marginalRate * 100).formatted(.number.precision(.fractionLength(0))))%."
         }
+    }
+}
+
+private struct ShiftControlCard: View {
+    let isShiftActive: Bool
+    let shiftStartDate: Date?
+    let onStart: () -> Void
+    let onEnd: () -> Void
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(isShiftActive ? "Shift Active" : "No Active Shift")
+                    .font(.headline)
+                if isShiftActive, let shiftStartDate {
+                    Text("Started \(shiftStartDate, style: .time) — \(shiftStartDate, style: .relative)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("Trips outside a shift are tracked as personal")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Spacer()
+            Button(isShiftActive ? "End Shift" : "Start Shift") {
+                isShiftActive ? onEnd() : onStart()
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(isShiftActive ? .red : .accentColor)
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -602,4 +651,5 @@ private struct YearEndChecklistRow: View {
 #Preview {
     DashboardView()
         .modelContainer(for: [Shift.self, Trip.self, Expense.self, DriverProfile.self, QuarterlyPayment.self, Vehicle.self], inMemory: true)
+        .environment(LocationService())
 }

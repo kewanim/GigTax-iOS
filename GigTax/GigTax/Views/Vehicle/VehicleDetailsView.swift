@@ -5,6 +5,7 @@ struct VehicleDetailsView: View {
     @Query private var vehicles: [Vehicle]
     @Query private var trips: [Trip]
     @Environment(\.modelContext) private var modelContext
+    @Environment(LocationService.self) private var locationService
 
     @State private var ownership: VehicleOwnership = .owned
     @State private var purchasePriceText = ""
@@ -12,13 +13,26 @@ struct VehicleDetailsView: View {
     @State private var loanAPRText = ""
     @State private var loanStartDate = Date()
     @State private var weeklyReminderOn = false
+    @State private var averageMPGText = ""
 
     private var vehicle: Vehicle? { vehicles.first }
 
     var body: some View {
+        content
+            .onAppear { loadFromVehicle() }
+            .onChange(of: purchasePriceText) { _, newValue in vehicle?.purchasePrice = Double(newValue) }
+            .onChange(of: loanTermText) { _, newValue in vehicle?.loanTermMonths = Int(newValue) }
+            .onChange(of: loanAPRText) { _, newValue in vehicle?.loanAPR = Double(newValue) }
+            .onChange(of: loanStartDate) { _, newValue in vehicle?.loanStartDate = newValue }
+            .onChange(of: averageMPGText) { _, newValue in updateMPG(from: newValue) }
+    }
+
+    @ViewBuilder
+    private var content: some View {
         Group {
             if let vehicle {
                 Form {
+                    fuelEconomySection(vehicle: vehicle)
                     ownershipSection(vehicle: vehicle)
                     maintenanceLinkSection
                     odometerSection(vehicle: vehicle)
@@ -29,11 +43,32 @@ struct VehicleDetailsView: View {
         }
         .navigationTitle("Vehicle Details")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear { loadFromVehicle() }
-        .onChange(of: purchasePriceText) { _, newValue in vehicle?.purchasePrice = Double(newValue) }
-        .onChange(of: loanTermText) { _, newValue in vehicle?.loanTermMonths = Int(newValue) }
-        .onChange(of: loanAPRText) { _, newValue in vehicle?.loanAPR = Double(newValue) }
-        .onChange(of: loanStartDate) { _, newValue in vehicle?.loanStartDate = newValue }
+    }
+
+    @ViewBuilder
+    private func fuelEconomySection(vehicle: Vehicle) -> some View {
+        Section {
+            LabeledContent("My Average MPG") {
+                TextField("e.g. 28", text: $averageMPGText)
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+            }
+        } header: {
+            Text("Fuel Economy")
+        } footer: {
+            Text("Set from EPA data during onboarding — a lab estimate. If your car's own trip computer shows a different real-world average (traffic, AC, driving style), enter it here. Replaces both the city and highway estimates used for every fuel cost calculation.")
+        }
+    }
+
+    private func updateMPG(from text: String) {
+        guard let mpg = Double(text), mpg > 0 else { return }
+        vehicle?.cityMPG = mpg
+        vehicle?.highwayMPG = mpg
+        // LocationService keeps its own copy (only synced once at launch
+        // otherwise), so an edit here takes effect immediately, not just
+        // after the next relaunch.
+        locationService.cityMPG = mpg
+        locationService.highwayMPG = mpg
     }
 
     @ViewBuilder
@@ -137,6 +172,7 @@ struct VehicleDetailsView: View {
         loanTermText = vehicle.loanTermMonths.map(String.init) ?? ""
         loanAPRText = vehicle.loanAPR.map { String($0) } ?? ""
         loanStartDate = vehicle.loanStartDate ?? Date()
+        averageMPGText = vehicle.combinedMPG == 0 ? "" : String(format: "%.0f", vehicle.combinedMPG)
     }
 
     private func toggleWeeklyReminder(_ isOn: Bool) {
