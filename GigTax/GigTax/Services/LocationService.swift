@@ -14,6 +14,7 @@ final class LocationService: NSObject {
     private(set) var authorizationStatus: CLAuthorizationStatus = .notDetermined
     private(set) var isShiftActive = false
     private(set) var shiftStartDate: Date?
+    private(set) var isShiftPaused = false
 
     // MARK: - Config (set by ContentView)
     var cityMPG: Double = 28
@@ -27,14 +28,16 @@ final class LocationService: NSObject {
     /// Was hardcoded to business for every auto-detected trip regardless of
     /// real intent. Restored on launch from DriverProfile so a shift spanning
     /// app relaunch/backgrounding isn't silently dropped.
-    func restoreShiftState(active: Bool, startDate: Date?) {
+    func restoreShiftState(active: Bool, startDate: Date?, paused: Bool) {
         isShiftActive = active
         shiftStartDate = active ? startDate : nil
+        isShiftPaused = active && paused
     }
 
     func startShift() {
         isShiftActive = true
         shiftStartDate = .now
+        isShiftPaused = false
         persistShiftState()
     }
 
@@ -43,12 +46,31 @@ final class LocationService: NSObject {
     func endShift() {
         isShiftActive = false
         shiftStartDate = nil
+        isShiftPaused = false
+        persistShiftState()
+    }
+
+    /// A break within an active shift (lunch, waiting out a slow spell) —
+    /// unlike endShift(), this keeps shiftStartDate untouched so the shift
+    /// is still the same continuous session once resumed. Any trip that
+    /// starts while paused is tagged personal, same as if no shift were
+    /// active at all.
+    func pauseShift() {
+        guard isShiftActive else { return }
+        isShiftPaused = true
+        persistShiftState()
+    }
+
+    func resumeShift() {
+        guard isShiftActive else { return }
+        isShiftPaused = false
         persistShiftState()
     }
 
     private func persistShiftState() {
         driverProfile?.isShiftActive = isShiftActive
         driverProfile?.shiftStartDate = shiftStartDate
+        driverProfile?.isShiftPaused = isShiftPaused
         try? modelContext?.save()
     }
 
@@ -242,7 +264,7 @@ final class LocationService: NSObject {
         isTracking = true
         currentTripStart = loc.timestamp
         tripStartLoc = loc
-        currentTripIsBusiness = isShiftActive
+        currentTripIsBusiness = isShiftActive && !isShiftPaused
         cityMilesAcc = 0; hwyMilesAcc = 0; totalMilesAcc = 0
         currentTripMiles = 0; stationaryStart = nil
         enterActiveMode(accuracy: kCLLocationAccuracyBest, distanceFilter: 10)
