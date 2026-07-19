@@ -46,7 +46,11 @@ struct ContentView: View {
                         locationService.highwayMPG = v.highwayMPG
                         locationService.vehicle    = v
                     }
+                    let profile = driverProfiles.first
+                    locationService.driverProfile = profile
+                    locationService.restoreShiftState(active: profile?.isShiftActive ?? false, startDate: profile?.shiftStartDate)
                     locationService.startMonitoring()
+                    await locationService.refreshGasPrice(state: profile?.state ?? "MD", apiKey: profile?.eiaAPIKey)
                 }
 
                 if lockService.isLocked {

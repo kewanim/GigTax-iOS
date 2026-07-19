@@ -21,6 +21,9 @@ final class DriverProfile {
     var preferredDeductionMethodRaw: String = DeductionMethod.standard.rawValue
     var biometricLockEnabled: Bool = false
     var notificationsEnabled: Bool = true
+    var eiaAPIKey: String?  // optional — free key from eia.gov unlocks live daily gas prices instead of the state-average estimate
+    var isShiftActive: Bool = false  // manual Start/End Shift state — persisted since a shift can span hours across relaunches/backgrounding
+    var shiftStartDate: Date?
 
     var filingStatus: FilingStatus {
         get { FilingStatus(rawValue: filingStatusRaw) ?? .single }
