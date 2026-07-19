@@ -8,6 +8,7 @@ struct QuarterlyPaymentsView: View {
     @Query private var driverProfiles: [DriverProfile]
     @Query private var payments: [QuarterlyPayment]
     @Query private var vehicles: [Vehicle]
+    @Query private var recurringExpenses: [RecurringExpense]
     @Environment(\.modelContext) private var modelContext
 
     @State private var showAddPayment = false
@@ -16,7 +17,7 @@ struct QuarterlyPaymentsView: View {
     private var driverProfile: DriverProfile? { driverProfiles.first }
 
     private var taxSummary: TaxSummary {
-        TaxYearSummaryBuilder.build(shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, vehicle: vehicles.first)
+        TaxYearSummaryBuilder.build(shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, vehicle: vehicles.first, recurringExpenses: recurringExpenses)
     }
 
     private var yearPayments: [QuarterlyPayment] {

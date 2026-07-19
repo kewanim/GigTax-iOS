@@ -26,17 +26,18 @@ enum WhatIfSimulator {
         expenses: [Expense],
         driverProfile: DriverProfile?,
         taxYear: Int,
-        extraMiles: Double
+        extraMiles: Double,
+        recurringExpenses: [RecurringExpense] = []
     ) -> Result {
         let baseline = TaxYearSummaryBuilder.build(
-            shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, methodOverride: .standard
+            shifts: shifts, trips: trips, expenses: expenses, driverProfile: driverProfile, taxYear: taxYear, methodOverride: .standard, recurringExpenses: recurringExpenses
         )
 
         let yearShifts = shifts.filter { $0.taxYear == taxYear }
         let yearTrips = trips.filter { $0.taxYear == taxYear }
         let yearExpenses = expenses.filter { $0.taxYear == taxYear }
         let grossIncome = yearShifts.reduce(0) { $0 + $1.totalIncome }
-        let comparison = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: driverProfile?.phoneBusinessPercent ?? 100)
+        let comparison = DeductionMethodCalculator.compare(trips: yearTrips, expenses: yearExpenses, phoneBusinessPercent: driverProfile?.phoneBusinessPercent ?? 100, recurringExpenses: recurringExpenses, taxYear: taxYear)
 
         let extraDeduction = max(extraMiles, 0) * 0.70
         let projectedDeduction = comparison.standardMileageDeduction + extraDeduction

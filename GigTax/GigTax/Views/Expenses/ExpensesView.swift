@@ -22,8 +22,11 @@ struct ExpensesView: View {
     private var categoryTotals: [(category: ExpenseCategory, total: Double)] {
         var totals: [ExpenseCategory: Double] = [:]
         for expense in ytdExpenses { totals[expense.category, default: 0] += expense.amount }
-        for recurring in recurringExpenses where recurring.isActive {
-            totals[recurring.category, default: 0] += recurring.proRatedTotalToDate
+        // Not filtered by isActive — proRatedTotal is already correctly
+        // date-bound (via startDate/endDate), and something paused mid-year
+        // still legitimately contributed to this year's total before it stopped.
+        for recurring in recurringExpenses {
+            totals[recurring.category, default: 0] += recurring.proRatedTotal(forTaxYear: currentYear)
         }
         return totals.map { (category: $0.key, total: $0.value) }.sorted { $0.total > $1.total }
     }
