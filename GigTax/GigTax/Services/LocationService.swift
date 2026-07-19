@@ -160,14 +160,27 @@ final class LocationService: NSObject {
     private func startMonitoringCarConnection() {
         guard !isRunningUnderTest else { return }
         NotificationManager.registerCarConnectionCategories()
-        wasConnectedToCar = CarConnectionMonitor.isCarConnected(outputPortTypes: AVAudioSession.sharedInstance().currentRoute.outputs.map(\.portType))
+        // Deliberately left false (not the real current route) so that if the
+        // phone is *already* connected to the car by the time this runs —
+        // e.g. GigTax launches after you're already plugged into CarPlay —
+        // evaluateCarConnection() below sees that as a fresh "connected"
+        // transition instead of silently adopting it as a no-op baseline.
+        wasConnectedToCar = false
+        evaluateCarConnection()
         routeChangeObserver = NotificationCenter.default.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main) { [weak self] _ in
-            Task { @MainActor [weak self] in self?.handleAudioRouteChange() }
+            Task { @MainActor [weak self] in self?.evaluateCarConnection() }
         }
         Task { await NotificationManager.requestAuthorizationIfNeeded() }
     }
 
-    private func handleAudioRouteChange() {
+    /// AVAudioSession.routeChangeNotification is only delivered once the app
+    /// process is actually scheduled to run — if the app is suspended in the
+    /// background when the phone connects to the car, delivery can lag by
+    /// minutes rather than firing instantly. Also called from process(_:) so
+    /// the next reliable location-triggered wake (GT-109's near-instant
+    /// geofence exit, or ordinary GPS updates once driving starts) catches
+    /// up on a connection the audio notification missed or delayed.
+    private func evaluateCarConnection() {
         let isConnectedNow = CarConnectionMonitor.isCarConnected(outputPortTypes: AVAudioSession.sharedInstance().currentRoute.outputs.map(\.portType))
         let event = CarConnectionMonitor.evaluate(wasConnected: wasConnectedToCar, isConnectedNow: isConnectedNow)
         wasConnectedToCar = isConnectedNow
@@ -281,6 +294,12 @@ final class LocationService: NSObject {
     // MARK: - Trip lifecycle
 
     func process(_ loc: CLLocation) {
+        // Backstop for evaluateCarConnection()'s own AVAudioSession
+        // notification, which can be delayed well past the moment of
+        // connection if the app was suspended — any reliable location wake
+        // (this one included) re-checks and catches up.
+        if !isRunningUnderTest { evaluateCarConnection() }
+
         let speed = max(0, loc.speed)
 
         if !isTracking {
