@@ -80,4 +80,69 @@ enum NotificationManager {
     static func cancelWeeklyOdometerCheckIn() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["weeklyOdometerCheckIn"])
     }
+
+    // MARK: - Car connection prompts
+
+    enum CarConnectionCategory {
+        static let connected = "carConnectedShiftDecision"
+        static let disconnected = "carDisconnectedShiftDecision"
+    }
+
+    enum CarConnectionAction {
+        static let business = "CAR_CONNECTED_BUSINESS"
+        static let personal = "CAR_CONNECTED_PERSONAL"
+        static let shiftOver = "CAR_DISCONNECTED_SHIFT_OVER"
+        static let pauseShift = "CAR_DISCONNECTED_PAUSE"
+        static let stillGoing = "CAR_DISCONNECTED_STILL_GOING"
+    }
+
+    /// Registers the action buttons shown on the car-connection prompts.
+    /// Must run once before the app finishes launching (categories are looked
+    /// up by identifier when a matching notification is actually delivered).
+    static func registerCarConnectionCategories() {
+        let business = UNNotificationAction(identifier: CarConnectionAction.business, title: "Business — Start Shift", options: [.foreground])
+        let personal = UNNotificationAction(identifier: CarConnectionAction.personal, title: "Personal", options: [])
+        let connectedCategory = UNNotificationCategory(
+            identifier: CarConnectionCategory.connected,
+            actions: [business, personal],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        let shiftOver = UNNotificationAction(identifier: CarConnectionAction.shiftOver, title: "Shift's Over", options: [.foreground])
+        let pause = UNNotificationAction(identifier: CarConnectionAction.pauseShift, title: "Just a Break", options: [])
+        let stillGoing = UNNotificationAction(identifier: CarConnectionAction.stillGoing, title: "Still Going", options: [])
+        let disconnectedCategory = UNNotificationCategory(
+            identifier: CarConnectionCategory.disconnected,
+            actions: [shiftOver, pause, stillGoing],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        UNUserNotificationCenter.current().setNotificationCategories([connectedCategory, disconnectedCategory])
+    }
+
+    /// Only sent when no shift is currently active — see LocationService.
+    static func promptCarConnectedShiftDecision() {
+        let content = UNMutableNotificationContent()
+        content.title = "Connected to your car"
+        content.body = "Is this drive for business or personal?"
+        content.sound = .default
+        content.categoryIdentifier = CarConnectionCategory.connected
+
+        let request = UNNotificationRequest(identifier: "carConnected-\(UUID().uuidString)", content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    /// Only sent when a shift is currently active — see LocationService.
+    static func promptCarDisconnectedShiftDecision() {
+        let content = UNMutableNotificationContent()
+        content.title = "Disconnected from your car"
+        content.body = "Is your shift over?"
+        content.sound = .default
+        content.categoryIdentifier = CarConnectionCategory.disconnected
+
+        let request = UNNotificationRequest(identifier: "carDisconnected-\(UUID().uuidString)", content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request)
+    }
 }

@@ -207,4 +207,43 @@ struct LocationServiceTests {
         let saved = try context.fetch(FetchDescriptor<Trip>())
         #expect(saved.first?.tripType == .personal)
     }
+
+    // GT-115: the car-connection notification's action buttons route to the
+    // same shift methods the Dashboard control already uses — see
+    // CarConnectionMonitorTests for the pure connect/disconnect decision logic.
+
+    @Test func businessActionFromCarConnectedNotificationStartsAShift() throws {
+        let (service, _) = try makeService()
+        service.handleCarConnectionAction(NotificationManager.CarConnectionAction.business)
+        #expect(service.isShiftActive == true)
+    }
+
+    @Test func personalActionFromCarConnectedNotificationStaysQuiet() throws {
+        let (service, _) = try makeService()
+        service.handleCarConnectionAction(NotificationManager.CarConnectionAction.personal)
+        #expect(service.isShiftActive == false)
+    }
+
+    @Test func shiftOverActionFromCarDisconnectedNotificationEndsTheShift() throws {
+        let (service, _) = try makeService()
+        service.startShift()
+        service.handleCarConnectionAction(NotificationManager.CarConnectionAction.shiftOver)
+        #expect(service.isShiftActive == false)
+    }
+
+    @Test func pauseActionFromCarDisconnectedNotificationPausesWithoutEnding() throws {
+        let (service, _) = try makeService()
+        service.startShift()
+        service.handleCarConnectionAction(NotificationManager.CarConnectionAction.pauseShift)
+        #expect(service.isShiftActive == true)
+        #expect(service.isShiftPaused == true)
+    }
+
+    @Test func stillGoingActionFromCarDisconnectedNotificationChangesNothing() throws {
+        let (service, _) = try makeService()
+        service.startShift()
+        service.handleCarConnectionAction(NotificationManager.CarConnectionAction.stillGoing)
+        #expect(service.isShiftActive == true)
+        #expect(service.isShiftPaused == false)
+    }
 }

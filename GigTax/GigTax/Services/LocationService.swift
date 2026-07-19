@@ -2,6 +2,8 @@ import Foundation
 import CoreLocation
 import SwiftData
 import ActivityKit
+import AVFoundation
+import UserNotifications
 
 @MainActor
 @Observable
@@ -124,16 +126,75 @@ final class LocationService: NSObject {
     private static let stopZoneIdentifier = "gigtax.stopZone"
     private let stopZoneRadius: CLLocationDistance = 150
 
+    // MARK: - Car connection (CarPlay / Bluetooth car audio)
+    private var wasConnectedToCar = false
+    private var routeChangeObserver: NSObjectProtocol?
+
     override init() {
         super.init()
         manager.delegate = self
         authorizationStatus = manager.authorizationStatus
+        // Touching UNUserNotificationCenter.current() can block for a very
+        // long time (observed: 100s+) against the test/simulator environment's
+        // notification daemon — same reasoning as skipping real ActivityKit
+        // calls under XCTest below.
+        if !isRunningUnderTest {
+            UNUserNotificationCenter.current().delegate = self
+        }
     }
 
     func startMonitoring() {
         manager.allowsBackgroundLocationUpdates = true
         manager.pausesLocationUpdatesAutomatically = false
         enterLowPowerMode()
+        startMonitoringCarConnection()
+    }
+
+    /// Prompts to start/pause/end a shift the moment the phone connects to or
+    /// disconnects from the car — driving before the GPS auto-detection would
+    /// otherwise notice (it needs ~30s of movement first) or without the
+    /// driver remembering to tap Start Shift themselves. Relies on the app
+    /// process being alive in the background, same real-world limitation as
+    /// the rest of background tracking (see the geofence work in GT-109) —
+    /// this isn't a separate, stronger guarantee.
+    private func startMonitoringCarConnection() {
+        guard !isRunningUnderTest else { return }
+        NotificationManager.registerCarConnectionCategories()
+        wasConnectedToCar = CarConnectionMonitor.isCarConnected(outputPortTypes: AVAudioSession.sharedInstance().currentRoute.outputs.map(\.portType))
+        routeChangeObserver = NotificationCenter.default.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor [weak self] in self?.handleAudioRouteChange() }
+        }
+        Task { await NotificationManager.requestAuthorizationIfNeeded() }
+    }
+
+    private func handleAudioRouteChange() {
+        let isConnectedNow = CarConnectionMonitor.isCarConnected(outputPortTypes: AVAudioSession.sharedInstance().currentRoute.outputs.map(\.portType))
+        let event = CarConnectionMonitor.evaluate(wasConnected: wasConnectedToCar, isConnectedNow: isConnectedNow)
+        wasConnectedToCar = isConnectedNow
+
+        switch CarConnectionMonitor.promptAction(for: event, isShiftActive: isShiftActive) {
+        case .promptConnected:
+            NotificationManager.promptCarConnectedShiftDecision()
+        case .promptDisconnected:
+            NotificationManager.promptCarDisconnectedShiftDecision()
+        case .none:
+            break
+        }
+    }
+
+    func handleCarConnectionAction(_ actionIdentifier: String) {
+        switch actionIdentifier {
+        case NotificationManager.CarConnectionAction.business:
+            startShift()
+        case NotificationManager.CarConnectionAction.shiftOver:
+            endShift()
+        case NotificationManager.CarConnectionAction.pauseShift:
+            pauseShift()
+        case NotificationManager.CarConnectionAction.personal, NotificationManager.CarConnectionAction.stillGoing:
+            break // stays quiet — no shift change
+        default:
+            break
+        }
     }
 
     /// Runs on a periodic BGProcessingTask: persists any pending SwiftData
@@ -373,4 +434,21 @@ extension LocationService: CLLocationManagerDelegate {
     // No explicit handling needed — significant-location-change monitoring
     // is already running in parallel as the fallback wake-up path.
     nonisolated func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error) {}
+}
+
+// MARK: - UNUserNotificationCenterDelegate
+extension LocationService: UNUserNotificationCenterDelegate {
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        let actionIdentifier = response.actionIdentifier
+        Task { @MainActor [weak self] in
+            self?.handleCarConnectionAction(actionIdentifier)
+            completionHandler()
+        }
+    }
+
+    /// Without this, banners for these prompts would be silently suppressed
+    /// whenever the app happens to be in the foreground when they fire.
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound])
+    }
 }
