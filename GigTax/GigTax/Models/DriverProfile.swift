@@ -24,6 +24,7 @@ final class DriverProfile {
     var eiaAPIKey: String?  // optional — free key from eia.gov unlocks live daily gas prices instead of the state-average estimate
     var isShiftActive: Bool = false  // manual Start/End Shift state — persisted since a shift can span hours across relaunches/backgrounding
     var shiftStartDate: Date?
+    var isShiftPaused: Bool = false  // a break within an active shift — doesn't reset shiftStartDate or end the shift, just tags driving as personal until resumed
 
     var filingStatus: FilingStatus {
         get { FilingStatus(rawValue: filingStatusRaw) ?? .single }

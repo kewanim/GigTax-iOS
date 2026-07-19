@@ -80,8 +80,11 @@ struct DashboardView: View {
             VStack(spacing: 0) {
                 ShiftControlCard(
                     isShiftActive: locationService.isShiftActive,
+                    isShiftPaused: locationService.isShiftPaused,
                     shiftStartDate: locationService.shiftStartDate,
                     onStart: { locationService.startShift() },
+                    onPause: { locationService.pauseShift() },
+                    onResume: { locationService.resumeShift() },
                     onEnd: { locationService.endShift() }
                 )
                 .padding()
@@ -275,31 +278,55 @@ private enum WaterfallLine: String, CaseIterable, Identifiable {
 
 private struct ShiftControlCard: View {
     let isShiftActive: Bool
+    let isShiftPaused: Bool
     let shiftStartDate: Date?
     let onStart: () -> Void
+    let onPause: () -> Void
+    let onResume: () -> Void
     let onEnd: () -> Void
+
+    private var statusText: String {
+        guard isShiftActive else { return "No Active Shift" }
+        return isShiftPaused ? "Shift Paused" : "Shift Active"
+    }
+
+    @ViewBuilder
+    private var subtitle: some View {
+        if isShiftActive, let shiftStartDate {
+            if isShiftPaused {
+                Text("On break — driving now counts as personal until you resume")
+            } else {
+                Text("Started \(shiftStartDate, style: .time) — \(shiftStartDate, style: .relative)")
+            }
+        } else {
+            Text("Trips outside a shift are tracked as personal")
+        }
+    }
 
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text(isShiftActive ? "Shift Active" : "No Active Shift")
+                Text(statusText)
                     .font(.headline)
-                if isShiftActive, let shiftStartDate {
-                    Text("Started \(shiftStartDate, style: .time) — \(shiftStartDate, style: .relative)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text("Trips outside a shift are tracked as personal")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                subtitle
+                    .font(.caption)
+                    .foregroundStyle(isShiftPaused ? .orange : .secondary)
             }
             Spacer()
-            Button(isShiftActive ? "End Shift" : "Start Shift") {
-                isShiftActive ? onEnd() : onStart()
+            if isShiftActive {
+                HStack(spacing: 8) {
+                    Button(isShiftPaused ? "Resume" : "Pause") {
+                        isShiftPaused ? onResume() : onPause()
+                    }
+                    .buttonStyle(.bordered)
+                    Button("End Shift", action: onEnd)
+                        .buttonStyle(.borderedProminent)
+                        .tint(.red)
+                }
+            } else {
+                Button("Start Shift", action: onStart)
+                    .buttonStyle(.borderedProminent)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(isShiftActive ? .red : .accentColor)
         }
         .accessibilityElement(children: .combine)
     }

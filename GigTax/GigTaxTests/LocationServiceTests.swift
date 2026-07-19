@@ -132,12 +132,79 @@ struct LocationServiceTests {
 
     @Test func restoredShiftStateFromRelaunchAppliesToNextTrip() throws {
         let (service, context) = try makeService()
-        service.restoreShiftState(active: true, startDate: Date().addingTimeInterval(-3600))
+        service.restoreShiftState(active: true, startDate: Date().addingTimeInterval(-3600), paused: false)
         let start = Date()
         drive(service, start: start, from: 0, through: 70)
         park(service, start: start, atOffsetSeconds: 70, from: 75, through: 265)
 
         let saved = try context.fetch(FetchDescriptor<Trip>())
         #expect(saved.first?.tripType == .business)
+    }
+
+    // GT-114: a driver can pause an active shift for a break without ending
+    // it — the shift's start time is untouched, but driving during the pause
+    // is tagged personal, same as if no shift were active.
+
+    @Test func tripStartedWhileShiftIsPausedIsTaggedPersonal() throws {
+        let (service, context) = try makeService()
+        service.startShift()
+        service.pauseShift()
+        let start = Date()
+        drive(service, start: start, from: 0, through: 70)
+        park(service, start: start, atOffsetSeconds: 70, from: 75, through: 265)
+
+        let saved = try context.fetch(FetchDescriptor<Trip>())
+        #expect(saved.first?.tripType == .personal)
+        #expect(service.isShiftActive == true) // pausing never ends the shift
+    }
+
+    @Test func resumingAPausedShiftGoesBackToTaggingBusiness() throws {
+        let (service, context) = try makeService()
+        service.startShift()
+        service.pauseShift()
+        service.resumeShift()
+        let start = Date()
+        drive(service, start: start, from: 0, through: 70)
+        park(service, start: start, atOffsetSeconds: 70, from: 75, through: 265)
+
+        let saved = try context.fetch(FetchDescriptor<Trip>())
+        #expect(saved.first?.tripType == .business)
+    }
+
+    @Test func pausingAShiftDoesNotResetItsStartDate() throws {
+        let (service, _) = try makeService()
+        service.startShift()
+        let originalStart = service.shiftStartDate
+        service.pauseShift()
+        #expect(service.shiftStartDate == originalStart)
+        service.resumeShift()
+        #expect(service.shiftStartDate == originalStart)
+    }
+
+    @Test func pausingWithNoActiveShiftDoesNothing() throws {
+        let (service, _) = try makeService()
+        service.pauseShift()
+        #expect(service.isShiftActive == false)
+        #expect(service.isShiftPaused == false)
+    }
+
+    @Test func endingAPausedShiftClearsThePauseToo() throws {
+        let (service, _) = try makeService()
+        service.startShift()
+        service.pauseShift()
+        service.endShift()
+        #expect(service.isShiftActive == false)
+        #expect(service.isShiftPaused == false)
+    }
+
+    @Test func restoredPausedShiftStateAppliesToNextTrip() throws {
+        let (service, context) = try makeService()
+        service.restoreShiftState(active: true, startDate: Date().addingTimeInterval(-1800), paused: true)
+        let start = Date()
+        drive(service, start: start, from: 0, through: 70)
+        park(service, start: start, atOffsetSeconds: 70, from: 75, through: 265)
+
+        let saved = try context.fetch(FetchDescriptor<Trip>())
+        #expect(saved.first?.tripType == .personal)
     }
 }

@@ -48,7 +48,7 @@ struct ContentView: View {
                     }
                     let profile = driverProfiles.first
                     locationService.driverProfile = profile
-                    locationService.restoreShiftState(active: profile?.isShiftActive ?? false, startDate: profile?.shiftStartDate)
+                    locationService.restoreShiftState(active: profile?.isShiftActive ?? false, startDate: profile?.shiftStartDate, paused: profile?.isShiftPaused ?? false)
                     locationService.startMonitoring()
                     await locationService.refreshGasPrice(state: profile?.state ?? "MD", apiKey: profile?.eiaAPIKey)
                 }
