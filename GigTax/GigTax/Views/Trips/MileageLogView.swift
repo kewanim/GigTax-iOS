@@ -3,6 +3,7 @@ import SwiftData
 
 struct MileageLogView: View {
     @Query(sort: \Trip.startDate, order: .reverse) private var allTrips: [Trip]
+    @Environment(\.modelContext) private var modelContext
 
     let taxYear: Int
 
@@ -51,6 +52,7 @@ struct MileageLogView: View {
                     .buttonStyle(.plain)
                     .task { await TripGeocoder.resolveAddressesIfNeeded(for: trip) }
                 }
+                .onDelete(perform: delete)
             }
         }
         .searchable(text: $searchText, prompt: "Search purpose or address")
@@ -67,6 +69,10 @@ struct MileageLogView: View {
         .sheet(item: $editingTrip) { trip in
             MileageLogEntryEditView(trip: trip)
         }
+    }
+
+    private func delete(at offsets: IndexSet) {
+        for index in offsets { modelContext.delete(filteredTrips[index]) }
     }
 }
 

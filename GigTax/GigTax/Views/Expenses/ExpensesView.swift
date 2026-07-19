@@ -10,6 +10,7 @@ struct ExpensesView: View {
     @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @Query private var recurringExpenses: [RecurringExpense]
     @Query private var driverProfiles: [DriverProfile]
+    @Environment(\.modelContext) private var modelContext
 
     @State private var showManualEntry = false
     @State private var groupMode = GroupMode.month
@@ -100,6 +101,7 @@ struct ExpensesView: View {
                                         ExpenseRow(expense: expense, phoneBusinessPercent: phoneBusinessPercent)
                                     }
                                 }
+                                .onDelete { offsets in delete(group.expenses, at: offsets) }
                             }
                         }
                     } else {
@@ -112,6 +114,7 @@ struct ExpensesView: View {
                                         ExpenseRow(expense: expense, phoneBusinessPercent: phoneBusinessPercent)
                                     }
                                 }
+                                .onDelete { offsets in delete(group.expenses, at: offsets) }
                             }
                         }
                     }
@@ -153,6 +156,10 @@ struct ExpensesView: View {
     private var groupedByCategory: [(category: ExpenseCategory, expenses: [Expense])] {
         let dict = Dictionary(grouping: filteredExpenses, by: \.category)
         return dict.keys.sorted { $0.rawValue < $1.rawValue }.map { (category: $0, expenses: dict[$0]!) }
+    }
+
+    private func delete(_ expensesInSection: [Expense], at offsets: IndexSet) {
+        for index in offsets { modelContext.delete(expensesInSection[index]) }
     }
 }
 
